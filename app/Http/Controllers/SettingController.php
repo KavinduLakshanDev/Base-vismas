@@ -60,10 +60,21 @@ class SettingController extends Controller
 
 
 
+            $company = Auth::guard('company')->user();
+            if (!$company) {
+                $user = Auth::user();
+                $activeCompanyCode = session('active_company_code', $user?->company_code);
+                $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
+                if (!$company && $user) {
+                    $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
+                }
+            }
+
             return Inertia::render('settings/index', [
                 'globalSettings' => $globalSettings,
                 'emailProviders' => $emailProviders,
                 'notifications' => $notifications,
+                'company' => $company,
                 'cacheSize' => $this->getCacheSize()
             ]);
         }
@@ -194,6 +205,9 @@ class SettingController extends Controller
                 'settings.company_email_from_name' => 'nullable|string|max:255',
                 'settings.registration_number' => 'nullable|string|max:100',
                 'settings.company_email' => 'nullable|email|max:255',
+                'settings.vat_number' => 'nullable|string|max:100',
+                'settings.tax_type' => 'nullable|string|max:50',
+                'settings.vat_gst_number_switch' => 'nullable|string|max:10',
             ], [
                 'settings.company_name.string' => __('Company name must be a valid string.'),
                 'settings.company_name.max' => __('Company name must not exceed 255 characters.'),
@@ -217,10 +231,62 @@ class SettingController extends Controller
                 'settings.company_email.max' => __('Email must not exceed 255 characters.'),
             ]);
 
-            $settings = $request->input('settings');
+            $settings = $request->input('settings', []);
 
             foreach ($settings as $key => $value) {
                 setSetting($key, $value);
+            }
+
+            // Sync with active company profile if available
+            $company = Auth::guard('company')->user();
+            if (!$company) {
+                $user = Auth::user();
+                $activeCompanyCode = session('active_company_code', $user?->company_code);
+                $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
+                if (!$company && $user) {
+                    $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
+                }
+            }
+
+            if ($company) {
+                $companyData = [];
+                if (isset($settings['company_name']) && $settings['company_name'] !== '') {
+                    $companyData['name'] = $settings['company_name'];
+                }
+                if (isset($settings['company_address'])) {
+                    $companyData['address'] = $settings['company_address'];
+                }
+                if (isset($settings['company_city'])) {
+                    $companyData['city'] = $settings['company_city'];
+                }
+                if (isset($settings['company_state'])) {
+                    $companyData['state'] = $settings['company_state'];
+                }
+                if (isset($settings['company_country'])) {
+                    $companyData['country'] = $settings['company_country'];
+                }
+                if (isset($settings['company_zipcode'])) {
+                    $companyData['postal_code'] = $settings['company_zipcode'];
+                }
+                if (isset($settings['company_telephone'])) {
+                    $companyData['phone'] = $settings['company_telephone'];
+                }
+                if (isset($settings['company_email'])) {
+                    $companyData['email'] = $settings['company_email'];
+                }
+                if (isset($settings['company_email_from_name'])) {
+                    $companyData['contact_person_name'] = $settings['company_email_from_name'];
+                }
+                if (isset($settings['registration_number'])) {
+                    $companyData['tax_id'] = $settings['registration_number'];
+                }
+                if (isset($settings['vat_number'])) {
+                    $companyData['vat_no'] = $settings['vat_number'];
+                }
+
+                if (!empty($companyData)) {
+                    $company->update($companyData);
+                }
             }
 
             return redirect()->back()->with('success', __('Company settings save successfully.'));

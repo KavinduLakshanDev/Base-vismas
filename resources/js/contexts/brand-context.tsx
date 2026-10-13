@@ -1,8 +1,8 @@
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { getImagePath } from '@/utils/helpers';
 
-interface BrandSettings {
+export interface BrandSettings {
   logo_dark?: string;
   logo_light?: string;
   favicon?: string;
@@ -14,103 +14,96 @@ interface BrandSettings {
   themeMode?: string;
   themeColor?: string;
   customColor?: string;
+  [key: string]: any;
 }
 
 interface BrandContextType {
   settings: BrandSettings;
+  setPreviewSettings: (newSettings: Partial<BrandSettings> | null) => void;
   getPreviewUrl: (path: string) => string;
   getPrimaryColor: () => string;
-  getSidebarStyles: () => React.CSSProperties;
-  getSidebarClasses: () => string;
-  getCompleteSidebarProps: () => { style: React.CSSProperties; className: string };
+  sidebarVariant: 'inset' | 'floating' | 'sidebar';
+  sidebarStyle: 'plain' | 'colored' | 'gradient';
 }
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
 export function BrandProvider({ children }: { children: ReactNode }) {
-  const { adminAllSetting, companyAllSetting, auth } = usePage().props as any;
-  const isSuperAdmin = auth?.user?.roles?.includes('superadmin');
+  const parentContext = useContext(BrandContext);
+  if (parentContext) {
+    return <>{children}</>;
+  }
 
-  let globalSettings;
-  if(isSuperAdmin != undefined) {
-        globalSettings = isSuperAdmin ? adminAllSetting : companyAllSetting;
-    } else {
-        globalSettings = adminAllSetting ;
-    }
+  const { adminAllSetting, companyAllSetting, globalSettings: pageGlobalSettings } = usePage().props as any;
+
+  // Merge settings from all available sources
+  const mergedSettings = {
+    ...(adminAllSetting || {}),
+    ...(companyAllSetting || {}),
+    ...(pageGlobalSettings || {}),
+  };
+
+  const defaultSettings: BrandSettings = {
+    logo_dark: mergedSettings?.logo_dark || '',
+    logo_light: mergedSettings?.logo_light || '',
+    favicon: mergedSettings?.favicon || '',
+    titleText: mergedSettings?.titleText || 'Vismass',
+    footerText: mergedSettings?.footerText || `© ${new Date().getFullYear()} Vismass. All rights reserved.`,
+    sidebarVariant: mergedSettings?.sidebarVariant || 'inset',
+    sidebarStyle: mergedSettings?.sidebarStyle || 'plain',
+    layoutDirection: mergedSettings?.layoutDirection || 'ltr',
+    themeMode: mergedSettings?.themeMode || 'light',
+    themeColor: mergedSettings?.themeColor || 'blue',
+    customColor: mergedSettings?.customColor || '#3b82f6',
+  };
+
+  const [previewSettings, setPreviewSettingsState] = useState<Partial<BrandSettings> | null>(null);
 
   const settings: BrandSettings = {
-    logo_dark: globalSettings?.logo_dark || '',
-    logo_light: globalSettings?.logo_light || '',
-    favicon: globalSettings?.favicon || '',
-    titleText: globalSettings?.titleText || 'BlackRandy',
-    footerText: globalSettings?.footerText || `© ${new Date().getFullYear()} BlackRandy. All rights reserved.`,
-    sidebarVariant: globalSettings?.sidebarVariant || 'inset',
-    sidebarStyle: globalSettings?.sidebarStyle || 'plain',
-    layoutDirection: globalSettings?.layoutDirection || 'ltr',
-    themeMode: globalSettings?.themeMode || 'light',
-    themeColor: globalSettings?.themeColor || 'black',
-    customColor: globalSettings?.customColor || '#000000',
+    ...defaultSettings,
+    ...(previewSettings || {}),
+  };
+
+  const setPreviewSettings = (newSettings: Partial<BrandSettings> | null) => {
+    setPreviewSettingsState(newSettings);
+  };
+
+  const themeColors: Record<string, string> = {
+    blue: '#3b82f6',
+    green: '#007c30',
+    purple: '#8b5cf6',
+    orange: '#f97316',
+    red: '#ef4444',
+  };
+
+  const getPrimaryColor = () => {
+    if (settings.themeColor === 'custom') {
+      return settings.customColor || '#3b82f6';
+    }
+    return themeColors[settings.themeColor as string] || '#3b82f6';
   };
 
   const getPreviewUrl = (path: string) => {
     return getImagePath(path);
   };
 
-  const themeColors = {
-    blue: '#3b82f6',
-    green: '#007c30',
-    purple: '#8b5cf6',
-    orange: '#f97316',
-    red: '#ef4444'
-  };
-
-  const getPrimaryColor = () => {
-    return settings.themeColor === 'custom'
-      ? settings.customColor || '#000000'
-      : themeColors[settings.themeColor as keyof typeof themeColors] || '#000000';
-  };
-
   useEffect(() => {
     const primaryColor = getPrimaryColor();
     const root = document.documentElement;
 
-    // Convert hex to HSL for CSS custom properties
-    const hexToHsl = (hex: string) => {
-      const r = parseInt(hex.slice(1, 3), 16) / 255;
-      const g = parseInt(hex.slice(3, 5), 16) / 255;
-      const b = parseInt(hex.slice(5, 7), 16) / 255;
+    // Apply primary colors to CSS variables
+    root.style.setProperty('--primary', primaryColor);
+    root.style.setProperty('--sidebar-primary', primaryColor);
+    root.style.setProperty('--sidebar-ring', primaryColor);
+    root.style.setProperty('--ring', primaryColor);
+    root.style.setProperty('--vismass-blue', primaryColor);
 
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
-
-      if (max !== min) {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-      }
-
-      return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-    };
-
-    // Set CSS custom properties
-    root.style.setProperty('--primary', hexToHsl(primaryColor));
-    root.style.setProperty('--primary-foreground', '0 0% 98%');
-
-    // Set global RTL direction
+    // Layout Direction
     const isRTL = settings.layoutDirection === 'rtl';
-
     root.dir = isRTL ? 'rtl' : 'ltr';
     root.style.direction = isRTL ? 'rtl' : 'ltr';
     document.body.dir = isRTL ? 'rtl' : 'ltr';
     document.body.style.direction = isRTL ? 'rtl' : 'ltr';
-
-    // Add/remove RTL class from body
     if (isRTL) {
       document.body.classList.add('rtl');
       document.body.classList.remove('ltr');
@@ -119,22 +112,33 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       document.body.classList.remove('rtl');
     }
 
-    // Set theme mode
-    const themeMode = settings.themeMode;
+    // Theme Mode (Light / Dark / Auto)
+    const themeMode = settings.themeMode || 'light';
+    const isDark =
+      themeMode === 'dark' ||
+      ((themeMode === 'auto' || themeMode === 'system') && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-    if (themeMode === 'light') {
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
-    } else if (themeMode === 'dark') {
+    root.classList.toggle('dark', isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+    if (isDark) {
       document.body.classList.remove('light');
       document.body.classList.add('dark');
     } else {
-      // system mode - let next-themes handle it
-      document.body.classList.remove('light', 'dark');
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
     }
 
-    // Override sidebar default styles with brand colors
-    let existingStyle = document.getElementById('brand-sidebar-styles');
+    // Sync appearance in localStorage & cookie
+    try {
+      const modeVal = themeMode === 'auto' ? 'system' : themeMode;
+      localStorage.setItem('appearance', modeVal);
+      document.cookie = `appearance=${modeVal};path=/;max-age=31536000;SameSite=Lax`;
+    } catch {
+      // ignore in SSR
+    }
+
+    // Dynamic Sidebar styling for colored and gradient modes
+    let existingStyle = document.getElementById('brand-sidebar-styles') as HTMLStyleElement | null;
     if (!existingStyle) {
       existingStyle = document.createElement('style');
       existingStyle.id = 'brand-sidebar-styles';
@@ -144,74 +148,65 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     if (settings.sidebarStyle === 'colored' || settings.sidebarStyle === 'gradient') {
       const sidebarBg = settings.sidebarStyle === 'colored'
         ? primaryColor
-        : `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}80 100%)`;
+        : `linear-gradient(180deg, ${primaryColor} 0%, color-mix(in srgb, ${primaryColor} 65%, black) 100%)`;
 
       existingStyle.textContent = `
-
-        [data-sidebar] .bg-sidebar-primary {
-          background: rgba(255,255,255,0.2);
+        [data-sidebar="sidebar"] {
+          background: ${sidebarBg} !important;
+          color: #ffffff !important;
         }
-        [data-sidebar] [data-sidebar="menu-button"]:hover {
-          background: rgba(255,255,255,0.1);
+        [data-sidebar="sidebar"] * {
+          --sidebar-foreground: 0 0% 100%;
+          --sidebar-border: rgba(255, 255, 255, 0.15);
         }
-        [data-sidebar] [data-sidebar="menu-button"][data-active="true"] {
-          background: rgba(255,255,255,0.2);
+        [data-sidebar="sidebar"] [data-sidebar="group-label"],
+        [data-sidebar="sidebar"] .text-black,
+        [data-sidebar="sidebar"] .text-sidebar-foreground {
+          color: rgba(255, 255, 255, 0.8) !important;
+        }
+        [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
+          color: #ffffff !important;
+        }
+        [data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
+          color: #ffffff !important;
+        }
+        [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover {
+          background: rgba(255, 255, 255, 0.15) !important;
+          color: #ffffff !important;
+        }
+        [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
+          background: rgba(255, 255, 255, 0.25) !important;
+          color: #ffffff !important;
+          font-weight: 600;
+        }
+        [data-sidebar="sidebar"] [data-slot="sidebar-header"],
+        [data-sidebar="sidebar"] [data-slot="sidebar-footer"] {
+          border-color: rgba(255, 255, 255, 0.15) !important;
         }
       `;
     } else {
       existingStyle.textContent = '';
     }
+  }, [settings.themeColor, settings.customColor, settings.layoutDirection, settings.themeMode, settings.sidebarStyle]);
 
-  }, [settings.themeColor, settings.customColor, settings.layoutDirection, settings.themeMode]);
+  const sidebarVariant = (
+    settings.sidebarVariant === 'floating'
+      ? 'floating'
+      : settings.sidebarVariant === 'minimal'
+      ? 'sidebar'
+      : 'inset'
+  ) as 'inset' | 'floating' | 'sidebar';
 
-  const getSidebarStyles = (): React.CSSProperties => {
-    const primaryColor = getPrimaryColor();
-
-    if (settings.sidebarStyle === 'colored') {
-      return { backgroundColor: primaryColor };
-    } else if (settings.sidebarStyle === 'gradient') {
-      return {
-        background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}80 100%)`
-      };
-    }
-    return {};
-  };
-
-  const getSidebarClasses = () => {
-    let classes = '';
-
-    if (settings.sidebarVariant === 'floating') {
-      classes += ' m-2 rounded-lg shadow-sm';
-    }
-
-    return classes;
-  };
-
-  const getCompleteSidebarProps = () => {
-    const styles = getSidebarStyles();
-    const classes = getSidebarClasses();
-    const hasCustomBackground = styles.backgroundColor || styles.background;
-
-    return {
-      style: {
-        ...styles,
-        ...(hasCustomBackground && {
-          backgroundColor: styles.backgroundColor || 'transparent',
-          background: styles.background || styles.backgroundColor || 'transparent'
-        })
-      },
-      className: `${classes}`
-    };
-  };
+  const sidebarStyle = (settings.sidebarStyle || 'plain') as 'plain' | 'colored' | 'gradient';
 
   return (
     <BrandContext.Provider value={{
       settings,
+      setPreviewSettings,
       getPreviewUrl,
       getPrimaryColor,
-      getSidebarStyles,
-      getSidebarClasses,
-      getCompleteSidebarProps
+      sidebarVariant,
+      sidebarStyle,
     }}>
       {children}
     </BrandContext.Provider>

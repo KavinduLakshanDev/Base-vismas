@@ -10,7 +10,7 @@ import { getSettingsComponent } from '@/utils/settings-components';
 
 export default function Settings() {
   const { t } = useTranslation();
-  const { auth, globalSettings = {}, emailProviders = {}, cacheSize = '0.00' } = usePage().props as any;
+  const { auth, globalSettings = {}, emailProviders = {}, cacheSize = '0.00', company } = usePage().props as any;
   const sidebarNavItems = allSettingsItems(auth, t);
   const [activeSection, setActiveSection] = useState(
     sidebarNavItems[0]?.href?.replace('#', '') || 'company-settings'
@@ -97,6 +97,7 @@ export default function Settings() {
                   <Component
                     userSettings={globalSettings}
                     auth={auth}
+                    company={company || auth?.company || auth?.active_company || auth?.user?.company}
                     emailProviders={emailProviders}
                     cacheSize={cacheSize}
                   />

@@ -11,6 +11,7 @@ import { getImagePath } from '@/utils/helpers';
 import { ThemePreview } from './theme-preview';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { useBrand } from '@/contexts/brand-context';
 
 interface BrandSettings {
   logo_dark: string;
@@ -30,10 +31,13 @@ interface BrandSettings {
 interface BrandSettingsProps {
   userSettings?: Record<string, string>;
   auth?: any;
+  company?: any;
+  [key: string]: any;
 }
 
 export default function BrandSettings({ userSettings, auth }: BrandSettingsProps) {
   const { t } = useTranslation();
+  const { setPreviewSettings } = useBrand();
   const [isLoading, setIsLoading] = useState(false);
   const user = auth?.user || auth?.company;
   const userRoles = user?.roles || (user?.user_type ? [user.user_type] : []);
@@ -46,31 +50,32 @@ export default function BrandSettings({ userSettings, auth }: BrandSettingsProps
     logo_dark: userSettings?.logo_dark || '',
     logo_light: userSettings?.logo_light || '',
     favicon: userSettings?.favicon || '',
-    titleText: userSettings?.titleText || 'BlackRandy',
-    footerText: userSettings?.footerText || `© ${new Date().getFullYear()} BlackRandy. All rights reserved.`,
+    titleText: userSettings?.titleText || 'Vismass',
+    footerText: userSettings?.footerText || `© ${new Date().getFullYear()} Vismass. All rights reserved.`,
     sidebarVariant: userSettings?.sidebarVariant || 'inset',
     sidebarStyle: userSettings?.sidebarStyle || 'plain',
     layoutDirection: userSettings?.layoutDirection || 'ltr',
     themeMode: userSettings?.themeMode || 'light',
-    themeColor: userSettings?.themeColor || 'green',
-    customColor: userSettings?.customColor || '#000000',
+    themeColor: userSettings?.themeColor || 'blue',
+    customColor: userSettings?.customColor || '#3b82f6',
   });
 
   // Update settings when userSettings prop changes
   useEffect(() => {
     if (userSettings) {
+      setPreviewSettings(null);
       setSettings({
         logo_dark: userSettings?.logo_dark || '',
         logo_light: userSettings?.logo_light || '',
         favicon: userSettings?.favicon || '',
-        titleText: userSettings?.titleText || 'BlackRandy',
-        footerText: userSettings?.footerText || `© ${new Date().getFullYear()} BlackRandy. All rights reserved.`,
+        titleText: userSettings?.titleText || 'Vismass',
+        footerText: userSettings?.footerText || `© ${new Date().getFullYear()} Vismass. All rights reserved.`,
         sidebarVariant: userSettings?.sidebarVariant || 'inset',
         sidebarStyle: userSettings?.sidebarStyle || 'plain',
         layoutDirection: userSettings?.layoutDirection || 'ltr',
         themeMode: userSettings?.themeMode || 'light',
-        themeColor: userSettings?.themeColor || 'green',
-        customColor: userSettings?.customColor || '#000000',
+        themeColor: userSettings?.themeColor || 'blue',
+        customColor: userSettings?.customColor || '#3b82f6',
       });
     }
   }, [userSettings]);
@@ -79,7 +84,6 @@ export default function BrandSettings({ userSettings, auth }: BrandSettingsProps
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
   };
-
 
   const handleMediaSelect = (name: string, url: string | string[]) => {
     const urlString = Array.isArray(url) ? url[0] || '' : url;
@@ -90,9 +94,17 @@ export default function BrandSettings({ userSettings, auth }: BrandSettingsProps
     setSettings(prev => ({ ...prev, [name]: value }));
   };
 
+  // Cleanly synchronize live preview after render
+  useEffect(() => {
+    setPreviewSettings(settings);
+  }, [settings]);
 
-
-
+  // Reset live preview when component unmounts
+  useEffect(() => {
+    return () => {
+      setPreviewSettings(null);
+    };
+  }, []);
 
   const saveSettings = () => {
     setIsLoading(true);
@@ -103,8 +115,9 @@ export default function BrandSettings({ userSettings, auth }: BrandSettingsProps
       preserveScroll: true,
       onSuccess: () => {
         setIsLoading(false);
-        // Reload settings to get updated values
-        router.reload({ only: ['globalSettings'] });
+        setPreviewSettings(null);
+        // Reload all settings to ensure everything is synced
+        router.reload();
       },
       onError: () => {
         setIsLoading(false);

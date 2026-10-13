@@ -29,53 +29,43 @@ interface CompanySettings {
 interface CompanySettingsProps {
   userSettings?: Record<string, string>;
   auth?: any;
+  company?: any;
+  [key: string]: any;
 }
 
-export default function CompanySettings({ userSettings, auth }: CompanySettingsProps) {
+export default function CompanySettings({ userSettings, auth, company }: CompanySettingsProps) {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const user = auth?.user || auth?.company;
+  const companyProfile = company || auth?.company || auth?.active_company || auth?.user?.company;
+
   const userRoles = user?.roles || (user?.user_type ? [user.user_type] : []);
   const isPrivileged = !!auth?.company || (Array.isArray(userRoles) ? userRoles : Object.values(userRoles)).some((r: any) =>
     ['superadmin', 'super_admin', 'company', 'company_admin'].includes(r)
   );
   const canEdit = isPrivileged || (user?.permissions || []).includes('edit-company-settings');
 
-  const [settings, setSettings] = useState<CompanySettings>({
-    company_name: userSettings?.company_name || '',
-    company_address: userSettings?.company_address || '',
-    company_city: userSettings?.company_city || '',
-    company_state: userSettings?.company_state || '',
-    company_country: userSettings?.company_country || '',
-    company_zipcode: userSettings?.company_zipcode || '',
-    company_telephone: userSettings?.company_telephone || '',
-    company_email_from_name: userSettings?.company_email_from_name || '',
-    registration_number: userSettings?.registration_number || '',
-    company_email: userSettings?.company_email || '',
-    vat_gst_number_switch: userSettings?.vat_gst_number_switch || 'off',
+  const getInitialSettings = (): CompanySettings => ({
+    company_name: companyProfile?.name || userSettings?.company_name || '',
+    registration_number: companyProfile?.tax_id || userSettings?.registration_number || companyProfile?.company_code || '',
+    company_address: companyProfile?.address || userSettings?.company_address || '',
+    company_city: companyProfile?.city || userSettings?.company_city || '',
+    company_state: companyProfile?.state || userSettings?.company_state || '',
+    company_country: companyProfile?.country || userSettings?.company_country || '',
+    company_zipcode: companyProfile?.postal_code || userSettings?.company_zipcode || '',
+    company_telephone: companyProfile?.phone || companyProfile?.contact_person_number || userSettings?.company_telephone || '',
+    company_email: companyProfile?.email || userSettings?.company_email || '',
+    company_email_from_name: userSettings?.company_email_from_name || companyProfile?.contact_person_name || companyProfile?.name || '',
+    vat_gst_number_switch: (userSettings?.vat_gst_number_switch === 'on' || Boolean(companyProfile?.vat_no)) ? 'on' : 'off',
     tax_type: userSettings?.tax_type || 'VAT',
-    vat_number: userSettings?.vat_number || '',
+    vat_number: companyProfile?.vat_no || userSettings?.vat_number || '',
   });
 
+  const [settings, setSettings] = useState<CompanySettings>(getInitialSettings);
+
   useEffect(() => {
-    if (userSettings) {
-      setSettings({
-        company_name: userSettings?.company_name || '',
-        company_address: userSettings?.company_address || '',
-        company_city: userSettings?.company_city || '',
-        company_state: userSettings?.company_state || '',
-        company_country: userSettings?.company_country || '',
-        company_zipcode: userSettings?.company_zipcode || '',
-        company_telephone: userSettings?.company_telephone || '',
-        company_email_from_name: userSettings?.company_email_from_name || '',
-        registration_number: userSettings?.registration_number || '',
-        company_email: userSettings?.company_email || '',
-        vat_gst_number_switch: userSettings?.vat_gst_number_switch || 'off',
-        tax_type: userSettings?.tax_type || 'VAT',
-        vat_number: userSettings?.vat_number || '',
-      });
-    }
-  }, [userSettings]);
+    setSettings(getInitialSettings());
+  }, [userSettings, companyProfile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -99,7 +89,7 @@ export default function CompanySettings({ userSettings, auth }: CompanySettingsP
       preserveScroll: true,
       onSuccess: () => {
         setIsLoading(false);
-        router.reload({ only: ['globalSettings'] });
+        router.reload();
       },
       onError: () => {
         setIsLoading(false);
@@ -114,6 +104,11 @@ export default function CompanySettings({ userSettings, auth }: CompanySettingsP
           <CardTitle className="flex items-center gap-2 text-lg">
             <Building className="h-5 w-5" />
             {t('Company Settings')}
+            {companyProfile?.company_code && (
+              <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {companyProfile.company_code} - {companyProfile.name}
+              </span>
+            )}
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
             {t('Configure your company information and details')}

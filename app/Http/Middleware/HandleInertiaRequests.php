@@ -53,8 +53,9 @@ class HandleInertiaRequests extends Middleware
                     'manage-storage-settings', 'manage-email-settings', 'manage-email-notification-settings',
                     'manage-bank-transfer-settings', 'manage-cache-settings',
                     'edit-brand-settings', 'edit-company-settings', 'edit-system-settings', 'edit-currency-settings',
-                    'clear-cache', 'edit-cookie-settings', 'edit-email-settings', 'test-email', 'edit-seo-settings',
-                    'edit-storage-settings', 'edit-bank-transfer-settings', 'edit-pusher-settings'
+                    'clear-cache', 'edit-cookie-settings', 'manage-cookie-settings', 'edit-email-settings',
+                    'test-email', 'edit-seo-settings', 'edit-storage-settings', 'edit-bank-transfer-settings',
+                    'edit-pusher-settings'
                 ])));
             }
             $roles = array_values(array_unique(array_filter([$user->user_type, $user->role?->level])));
@@ -84,7 +85,7 @@ class HandleInertiaRequests extends Middleware
             } elseif ($activeCompany) {
                 $company = $activeCompany;
             } elseif ($user instanceof \App\Models\User) {
-                $company = $user->company;
+                $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
             }
         }
 

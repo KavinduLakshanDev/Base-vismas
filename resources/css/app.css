@@ -60,12 +60,14 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
-    --color-vismass-blue: #00aeef;
+    --color-vismass-blue: var(--vismass-blue);
     --color-malibo-blue: #FF2ABF;
-    --color-vismass-grey: #737578;
+    --color-vismass-grey: var(--vismass-grey);
 }
 
 :root {
+    --vismass-blue: var(--primary, #00aeef);
+    --vismass-grey: #737578;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
     --card: oklch(1 0 0);
@@ -134,6 +136,93 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+    --vismass-blue: var(--primary, #00aeef);
+    --vismass-grey: oklch(0.35 0 0);
+}
+
+/* Layout adaptivity for legacy and page-level container classes in dark mode */
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .bg-zinc-50 {
+    background-color: var(--background) !important;
+    color: var(--foreground);
+}
+
+.dark .bg-white {
+    background-color: var(--card) !important;
+    color: var(--card-foreground);
+}
+
+.dark .bg-white\/80 {
+    background-color: color-mix(in srgb, var(--card) 85%, transparent) !important;
+}
+
+.dark .bg-white\/70 {
+    background-color: color-mix(in srgb, var(--card) 70%, transparent) !important;
+}
+
+.dark .bg-white\/50 {
+    background-color: color-mix(in srgb, var(--card) 50%, transparent) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-slate-100 {
+    background-color: color-mix(in srgb, var(--card) 75%, transparent) !important;
+    color: var(--muted-foreground) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-gray-200,
+.dark .border-gray-100,
+.dark .border-blue-200,
+.dark .border-blue-200\/50 {
+    border-color: var(--border) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark .text-gray-700,
+.dark .text-slate-700 {
+    color: var(--foreground) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500 {
+    color: var(--muted-foreground) !important;
+}
+
+.dark .bg-blue-50,
+.dark .bg-blue-100 {
+    background-color: color-mix(in srgb, var(--primary) 15%, var(--card)) !important;
+}
+
+.dark .text-blue-600,
+.dark .text-blue-500 {
+    color: var(--primary) !important;
+}
+
+/* Adapt blue button gradients to primary theme color */
+.bg-gradient-to-r.from-blue-500.to-blue-600,
+.bg-gradient-to-r.from-blue-600.to-blue-700 {
+    background-image: linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 75%, black)) !important;
+}
+
+/* Adapt focus rings and border accents to primary theme color */
+.focus\:ring-blue-400\/20:focus,
+.focus\:ring-blue-500:focus {
+    --tw-ring-color: color-mix(in srgb, var(--primary) 30%, transparent) !important;
+}
+.focus\:border-blue-400:focus,
+.focus\:border-blue-500:focus {
+    border-color: var(--primary) !important;
 }
 
 @layer base {

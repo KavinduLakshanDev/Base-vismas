@@ -14,19 +14,20 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 // Set up global route function for Wayfinder compatibility
 declare global {
-    function route(name: string, params?: any, absolute?: boolean): string;
+    function route(name?: string, params?: any, absolute?: boolean): any;
 }
 
-globalThis.route = (name: string, params?: any, absolute?: boolean): string => {
-    // Handle known routes directly
+const resolveRoute = (name: string): any => {
     if (name === 'stock-transfers.index') {
-        const baseUrl = '/stock-transfers';
-        const queryString = params ? new URLSearchParams(params).toString() : '';
-        const url = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-        return absolute ? window.location.origin + url : url;
+        return {
+            url: (params?: any) => {
+                const baseUrl = '/stock-transfers';
+                const queryString = params ? new URLSearchParams(params).toString() : '';
+                return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+            }
+        };
     }
 
-    // Traverse the routes object
     const parts = name.split('.');
     let current: any = routes;
 
@@ -39,9 +40,27 @@ globalThis.route = (name: string, params?: any, absolute?: boolean): string => {
             if (current && (typeof current === 'object' || typeof current === 'function') && camelPart in current) {
                 current = current[camelPart];
             } else {
-                throw new Error(`Route '${name}' not found. Part '${part}' is missing from the route definition.`);
+                return null;
             }
         }
+    }
+
+    return current;
+};
+
+const routeFn = (name?: string, params?: any, absolute?: boolean): any => {
+    if (!name) {
+        return {
+            has: (n: string) => {
+                const target = resolveRoute(n);
+                return !!target && typeof target.url === 'function';
+            }
+        };
+    }
+
+    const current = resolveRoute(name);
+    if (!current) {
+        throw new Error(`Route '${name}' not found.`);
     }
 
     if (current && typeof current.url === 'function') {
@@ -59,6 +78,13 @@ globalThis.route = (name: string, params?: any, absolute?: boolean): string => {
 
     throw new Error(`Route '${name}' resolved but does not have a url method.`);
 };
+
+routeFn.has = (n: string) => {
+    const target = resolveRoute(n);
+    return !!target && typeof target.url === 'function';
+};
+
+globalThis.route = routeFn as any;
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

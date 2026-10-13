@@ -59,7 +59,7 @@ export default function SectionIndex({ sections }: { sections: any[] }) {
         <AppLayout breadcrumbs={breadcrumbs} footerModuleName="Section Management">
             <Head title={t('Sections')} />
 
-            <div className="flex-1 bg-slate-50">
+            <div className="flex-1 bg-slate-50 dark:bg-background">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

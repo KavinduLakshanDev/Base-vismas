@@ -91,6 +91,9 @@ export default function CompanyProfile({ company }: Props) {
     }, []);
 
     const fetchVatRates = async () => {
+        if (typeof (window as any).route?.has === 'function' && !(window as any).route.has('company.vat-rates.index')) {
+            return;
+        }
         setLoadingVatRates(true);
         try {
             const response = await axios.get(route('company.vat-rates.index'));
@@ -193,7 +196,7 @@ export default function CompanyProfile({ company }: Props) {
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs} footerModuleName="Company Profile">
-            <div className="flex-1 bg-slate-50">
+            <div className="flex-1 bg-slate-50 dark:bg-background">
                 <Head title="Company Profile" />
 
                 {/* Header */}

@@ -19,6 +19,7 @@ import { BookOpen, Code, Database, File, FileText, Folder, LayoutGrid, Layers, U
 import { usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 import { resolveUrl } from '@/lib/utils';
+import { useBrand } from '@/contexts/brand-context';
 import AppLogo from './app-logo';
 
 // Helper to check roles for items
@@ -142,9 +143,10 @@ export function AppSidebar() {
     const filteredServicesItems = servicesNavItems.filter(shouldShow);
     const filteredReportsItems = reportsNavItems.filter(shouldShow);
     const filteredAdminItems = adminNavItems.filter(shouldShow);
+    const { sidebarVariant } = useBrand();
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar collapsible="icon" variant={sidebarVariant}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -161,7 +163,7 @@ export function AppSidebar() {
                 {/* Section 1: Company & Users */}
                 {filteredCompanyItems.length > 0 && (
                     <SidebarGroup className="px-2 py-0">
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Company & Users</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Company & Users</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredCompanyItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
@@ -184,7 +186,7 @@ export function AppSidebar() {
                 {/* Section 2: Products & Sales */}
                 {filteredProductsItems.length > 0 && (
                     <SidebarGroup className="px-2 py-0">
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Products & Sales</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Products & Sales</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredProductsItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
@@ -207,7 +209,7 @@ export function AppSidebar() {
                 {/* Section 3: Printer & Stock Transfer */}
                 {filteredPrinterStockItems.length > 0 && (
                     <SidebarGroup className="px-2 py-0">
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Stock & Wastage</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Stock & Wastage</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredPrinterStockItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
@@ -230,7 +232,7 @@ export function AppSidebar() {
                 {/* Section 4: Payments */}
                 {filteredPaymentsItems.length > 0 && (
                     <SidebarGroup className="px-2 py-0">
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Payments</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Payments</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredPaymentsItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
@@ -253,7 +255,7 @@ export function AppSidebar() {
                 {/* Section 5: Service Jobs */}
                 {filteredServicesItems.length > 0 && (
                     <SidebarGroup className="px-2 py-0">
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Service Jobs</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Service Jobs</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredServicesItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
@@ -277,7 +279,7 @@ export function AppSidebar() {
                 {/* Admin Section */}
                 {filteredAdminItems.length > 0 && (
                     <SidebarGroup className='px-2 py-0'>
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Admin</SidebarGroupLabel>
+                        <SidebarGroupLabel className="text-sidebar-foreground/70 font-bold text-sm tracking-wide">Admin</SidebarGroupLabel>
                         <SidebarMenu>
                             {filteredAdminItems.map((item) => (
                                 <SidebarMenuItem key={item.title}>
