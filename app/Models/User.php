@@ -42,6 +42,7 @@ class User extends Authenticatable
         'failed_login_attempts',
         'locked_until',
         'password_reset_token',
+        'storage_limit',
     ];
 
     /**

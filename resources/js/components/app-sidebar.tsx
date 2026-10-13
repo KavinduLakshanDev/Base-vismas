@@ -52,7 +52,12 @@ const companyNavItems: RoleNavItem[] = [
         icon: Users,
         roles: ['company_admin'],
     },
-    
+    {
+        title: 'Media Library',
+        href: '/media-library',
+        icon: Folder,
+        roles: ['company_admin', 'section_admin', 'technician', 'cashier'],
+    },
 ];
 
 // Section 2: Products & Sales

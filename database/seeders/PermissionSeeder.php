@@ -42,6 +42,17 @@ class PermissionSeeder extends Seeder
             ['name' => 'View Settings', 'slug' => 'settings.view', 'description' => 'Can view system settings'],
             ['name' => 'Edit Settings', 'slug' => 'settings.edit', 'description' => 'Can modify system settings'],
 
+            // Media Library
+            ['name' => 'Manage Media', 'slug' => 'manage-media', 'description' => 'Can access and manage media library'],
+            ['name' => 'Manage All Media', 'slug' => 'manage-any-media', 'description' => 'Can manage media across company'],
+            ['name' => 'Manage Own Media', 'slug' => 'manage-own-media', 'description' => 'Can manage own uploaded media'],
+            ['name' => 'Create Media', 'slug' => 'create-media', 'description' => 'Can upload new media files'],
+            ['name' => 'Download Media', 'slug' => 'download-media', 'description' => 'Can download media files'],
+            ['name' => 'Delete Media', 'slug' => 'delete-media', 'description' => 'Can delete media files'],
+            ['name' => 'Manage Media Directories', 'slug' => 'manage-media-directories', 'description' => 'Can manage directories'],
+            ['name' => 'Create Media Directories', 'slug' => 'create-media-directories', 'description' => 'Can create media directories'],
+            ['name' => 'Edit Media Directories', 'slug' => 'edit-media-directories', 'description' => 'Can edit media directories'],
+            ['name' => 'Delete Media Directories', 'slug' => 'delete-media-directories', 'description' => 'Can delete media directories'],
         ];
 
         foreach ($permissions as $permission) {

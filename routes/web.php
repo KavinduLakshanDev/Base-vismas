@@ -81,6 +81,17 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::get('sections', [SectionController::class, 'apiIndex']);
         Route::get('companies', [\App\Http\Controllers\Api\CompanyController::class, 'index']);
     });
+
+    // Media Library Routes
+    Route::get('/media-library', [\App\Http\Controllers\MediaController::class, 'page'])->name('media-library');
+    Route::get('/media', [\App\Http\Controllers\MediaController::class, 'index'])->name('media.index');
+    Route::post('/media/batch', [\App\Http\Controllers\MediaController::class, 'batchStore'])->name('media.batch');
+    Route::get('/media/{id}/download', [\App\Http\Controllers\MediaController::class, 'download'])->name('media.download');
+    Route::delete('/media/{id}', [\App\Http\Controllers\MediaController::class, 'destroy'])->name('media.destroy');
+    Route::post('/media/directories', [\App\Http\Controllers\MediaController::class, 'createDirectory'])->name('media.directories.create');
+    Route::put('/media/directories/{id}', [\App\Http\Controllers\MediaController::class, 'updateDirectory'])->name('media.directories.update');
+    Route::delete('/media/directories/{id}', [\App\Http\Controllers\MediaController::class, 'destroyDirectory'])->name('media.directories.destroy');
+    Route::patch('/media/{id}/directory', [\App\Http\Controllers\MediaController::class, 'updateMediaDirectory'])->name('media.directory.update');
 });
 
 require __DIR__.'/settings.php';
