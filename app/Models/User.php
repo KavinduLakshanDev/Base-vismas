@@ -110,9 +110,4 @@ class User extends Authenticatable
     {
         return $this->user_type === 'super_admin';
     }
-
-    public function serviceJobs()
-    {
-        return $this->hasMany(ServiceJob::class, 'assigned_technician_id');
-    }
 }

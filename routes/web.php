@@ -43,11 +43,6 @@ Route::middleware(['auth:web,company'])->group(function () {
     Route::get('company/profile', [\App\Http\Controllers\CompanyProfileController::class, 'show'])->name('company.profile');
     Route::put('company/profile', [\App\Http\Controllers\CompanyProfileController::class, 'update'])->name('company.profile.update');
 
-    Route::get('company/vat-rates', [\App\Http\Controllers\VatRateController::class, 'index'])->name('company.vat-rates.index');
-    Route::post('company/vat-rates', [\App\Http\Controllers\VatRateController::class, 'store'])->name('company.vat-rates.store');
-    Route::put('company/vat-rates/{vatRate}', [\App\Http\Controllers\VatRateController::class, 'update'])->name('company.vat-rates.update');
-    Route::delete('company/vat-rates/{vatRate}', [\App\Http\Controllers\VatRateController::class, 'destroy'])->name('company.vat-rates.destroy');
-
     Route::get('api/company-data', function() {
         return \App\Models\Company::first();
     });

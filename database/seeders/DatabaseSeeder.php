@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             CompanySeeder::class,
             ControlMasterSeeder::class,
             SectionSeeder::class,
-            VatRateSeeder::class,
             VismassUserSeeder::class,
             MaliboUserSeeder::class,
             UsersSeeder::class,

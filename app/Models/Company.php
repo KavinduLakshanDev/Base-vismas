@@ -91,9 +91,4 @@ class Company extends Authenticatable
         // return $this->hasOne(PackageDetail::class, 'company_code', 'company_code');
         return null;
     }
-
-    public function vatRates(): HasMany
-    {
-        return $this->hasMany(VatRate::class, 'company_id', 'id');
-    }
 }
