@@ -1,7 +1,6 @@
 <?php
 
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\DeliveryRouteController;
+
 use App\Http\Controllers\Reports\PrinterStockReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,48 +9,13 @@ use Illuminate\Support\Facades\Route;
 | MALIBO Business Unit Routes (Non-VAT Operations)  
 |--------------------------------------------------------------------------
 | Routes for MALIBO operations including:
-| - Delivery Management
 | - Printing Operations
 | - Non-VAT compliant operations
 */
 
 Route::middleware(['auth:web,company', 'verified', 'business.unit:malibo'])->prefix('malibo')->name('malibo.')->group(function () {
     
-    // Delivery Management
-    Route::prefix('deliveries')->name('deliveries.')->group(function () {
-        Route::get('/', [DeliveryController::class, 'index'])->name('index');
-        Route::get('/create', [DeliveryController::class, 'create'])->name('create');
-        Route::post('/', [DeliveryController::class, 'store'])->name('store');
-        Route::get('/{delivery}', [DeliveryController::class, 'show'])->name('show');
-        Route::get('/{delivery}/edit', [DeliveryController::class, 'edit'])->name('edit');
-        Route::put('/{delivery}', [DeliveryController::class, 'update'])->name('update');
-        Route::delete('/{delivery}', [DeliveryController::class, 'destroy'])->name('destroy');
-        
-        // Delivery-specific routes
-        Route::patch('/{delivery}/status', [DeliveryController::class, 'updateStatus'])->name('update-status');
-        Route::get('/{delivery}/tracking', [DeliveryController::class, 'tracking'])->name('tracking');
-        Route::get('/{delivery}/receipt', [DeliveryController::class, 'generateReceipt'])->name('receipt');
-        Route::get('/search/customers', [DeliveryController::class, 'searchCustomers'])->name('search-customers');
-    });
-
-    // Delivery Routes Management
-    Route::prefix('routes')->name('routes.')->group(function () {
-        Route::get('/', [DeliveryRouteController::class, 'index'])->name('index');
-        Route::get('/create', [DeliveryRouteController::class, 'create'])->name('create');
-        Route::post('/', [DeliveryRouteController::class, 'store'])->name('store');
-        Route::get('/{deliveryRoute}', [DeliveryRouteController::class, 'show'])->name('show');
-        Route::get('/{deliveryRoute}/edit', [DeliveryRouteController::class, 'edit'])->name('edit');
-        Route::put('/{deliveryRoute}', [DeliveryRouteController::class, 'update'])->name('update');
-        Route::delete('/{deliveryRoute}', [DeliveryRouteController::class, 'destroy'])->name('destroy');
-        
-        // Route optimization and management
-        Route::post('/{deliveryRoute}/optimize', [DeliveryRouteController::class, 'optimize'])->name('optimize');
-        Route::get('/{deliveryRoute}/map', [DeliveryRouteController::class, 'showMap'])->name('map');
-        Route::patch('/{deliveryRoute}/activate', [DeliveryRouteController::class, 'activate'])->name('activate');
-        Route::patch('/{deliveryRoute}/deactivate', [DeliveryRouteController::class, 'deactivate'])->name('deactivate');
-    });
-
-    // Printing Operations
+     // Printing Operations
     Route::prefix('printing')->name('printing.')->group(function () {
         // Printer Stock Management
         Route::get('/stock', [PrinterStockReportController::class, 'index'])->name('stock.index');

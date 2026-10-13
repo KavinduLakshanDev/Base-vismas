@@ -1,19 +1,14 @@
 <?php
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\DeliveryRouteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\SectionController;
-use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Reports\StockInHandReportController;
 use App\Http\Controllers\Reports\PrinterStockReportController;
 use App\Http\Controllers\Reports\CollectionReportController;
 use App\Http\Controllers\Reports\ItemListReportController;
-use App\Http\Controllers\Reports\WastageReportController;
-use App\Http\Controllers\StockTransferController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -94,11 +89,7 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::get('customer-payments/{customerPayment}/receipt', [\App\Http\Controllers\Admin\CustomerPaymentController::class, 'generateReceipt'])->name('customer-payments.receipt');
         Route::resource('customer-payments', \App\Http\Controllers\Admin\CustomerPaymentController::class);
 
-        // Supplier Payment Routes
-        Route::get('supplier-payments/search-suppliers', [\App\Http\Controllers\Admin\SupplierPaymentController::class, 'searchSuppliers'])->name('supplier-payments.search-suppliers');
-        Route::get('supplier-details', [\App\Http\Controllers\Admin\SupplierPaymentController::class, 'getSupplierDetails'])->name('supplier-details');
-        Route::get('supplier-payments/{supplierPayment}/receipt', [\App\Http\Controllers\Admin\SupplierPaymentController::class, 'generateReceipt'])->name('supplier-payments.receipt');
-        Route::resource('supplier-payments', \App\Http\Controllers\Admin\SupplierPaymentController::class)->only(['index', 'store', 'destroy']);
+        
 
         // Bank Account Routes
         Route::resource('bank-accounts', \App\Http\Controllers\Admin\BankAccountController::class);
@@ -118,36 +109,13 @@ Route::middleware(['auth:web,company'])->group(function () {
 
 
 
-    // Delivery routes
-    Route::prefix('deliveries')->name('delivery.')->group(function () {
-        Route::get('/', [DeliveryController::class, 'index'])->name('index');
-        Route::get('/create', [DeliveryController::class, 'create'])->name('create');
-        Route::post('/', [DeliveryController::class, 'store'])->name('store');
-        
-        Route::prefix('routes')->name('routes.')->group(function () {
-            Route::get('/', [DeliveryRouteController::class, 'index'])->name('index');
-            Route::get('/create', [DeliveryRouteController::class, 'create'])->name('create');
-            Route::post('/', [DeliveryRouteController::class, 'store'])->name('store');
-            Route::get('/{route}', [DeliveryRouteController::class, 'show'])->name('show');
-            Route::get('/{route}/edit', [DeliveryRouteController::class, 'edit'])->name('edit');
-            Route::put('/{route}', [DeliveryRouteController::class, 'update'])->name('update');
-            Route::delete('/{route}', [DeliveryRouteController::class, 'destroy'])->name('destroy');
-        });
-        
-        Route::get('/{delivery}', [DeliveryController::class, 'show'])->name('show');
-        Route::get('/{delivery}/edit', [DeliveryController::class, 'edit'])->name('edit');
-        Route::put('/{delivery}', [DeliveryController::class, 'update'])->name('update');
-        Route::patch('/{delivery}/status', [DeliveryController::class, 'updateStatus'])->name('update-status');
-        Route::delete('/{delivery}', [DeliveryController::class, 'destroy'])->name('destroy');
-    });
+    
 
     // Customer routes
     Route::resource('customers', CustomerController::class);
     Route::get('/customers/search', [CustomerController::class, 'search'])->name('customers.search');
 
-    // Supplier routes
-    Route::resource('suppliers', SupplierController::class);
-    Route::patch('suppliers/{id}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
+    
 
     // Reports routes
     Route::prefix('reports')->name('reports.')->group(function () {
@@ -158,8 +126,7 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::get('printer-stock', [PrinterStockReportController::class, 'index'])->name('printer-stock.index');
         Route::get('printer-stock/download', [PrinterStockReportController::class, 'generateReport'])->name('printer-stock.download');
 
-        // Wastage Report
-        Route::get('wastage', [WastageReportController::class, 'index'])->name('wastage.index');
+        
 
 
 
@@ -324,116 +291,6 @@ Route::middleware(['auth:web,company'])->group(function () {
 
             return Inertia::render('Reports/CustomerLedger', $data);
         })->name('customer-ledger');
-        
-        Route::get('supplier-ledger', function () {
-            $company = null;
-            if (auth('company')->check()) {
-                $company = auth('company')->user();
-            } else {
-                $user = auth('web')->user();
-                $company = $user ? $user->company : \App\Models\Company::first();
-            }
-
-            if (!$company) {
-                $company = (object) [
-                    'company_code' => 'C01',
-                    'name' => 'VISION COPIER',
-                    'primary_color' => '#00aeef',
-                    'secondary_color' => '#737578'
-                ];
-            }
-
-            $suppliers = \App\Models\Address::where('company_code', $company->company_code ?? 'C01')
-                ->whereHas('accMas', function ($q) {
-                    $q->where('AccTyp', 'SUPPLIER');
-                })
-                ->with(['accMas', 'section'])
-                ->orderBy('FstNm')
-                ->get();
-
-            $sections = \App\Models\Section::where('company_code', $company->company_code ?? 'C01')->get();
-
-            $data = [
-                'suppliers' => $suppliers,
-                'company' => $company,
-                'sections' => $sections,
-            ];
-
-            // If supplier is selected, fetch transactions
-            if (request('supplier_id')) {
-                $supplier = \App\Models\Address::where('AdrCd', request('supplier_id'))
-                    ->with(['accMas', 'section'])
-                    ->first();
-                
-                if ($supplier) {
-                    $fromDate = request('from_date') ? \Carbon\Carbon::parse(request('from_date')) : \Carbon\Carbon::now()->subMonths(3);
-                    $toDate = request('to_date') ? \Carbon\Carbon::parse(request('to_date')) : \Carbon\Carbon::now();
-
-                    // Purchases table dropped
-                    $purchasesBeforeDate = 0;
-                    
-                    $paymentsBeforeDate = \App\Models\SupplierPayment::where('supplier_code', $supplier->AdrCd)
-                        ->where('payment_date', '<', $fromDate)
-                        ->sum('paid_amount');
-                    
-                    $openingBalance = $purchasesBeforeDate - $paymentsBeforeDate;
-
-                    // Purchase transactions for the period
-                    $purchases = collect([]);
-
-                    // Get payment transactions for the period
-                    $payments = \App\Models\SupplierPayment::where('supplier_code', $supplier->AdrCd)
-                        ->whereBetween('payment_date', [$fromDate, $toDate])
-                        ->get()
-                        ->map(function($payment) {
-                            $description = 'Payment';
-                            if ($payment->payment_method) {
-                                $description .= ' - ' . ucfirst($payment->payment_method);
-                            }
-                            if ($payment->cheque_no) {
-                                $description .= ' (Cheque: ' . $payment->cheque_no . ')';
-                            }
-                            return [
-                                'date' => $payment->payment_date,
-                                'type' => 'payment',
-                                'description' => $description,
-                                'reference' => $payment->payment_no ?? '-',
-                                'debit' => $payment->paid_amount,
-                                'credit' => 0,
-                            ];
-                        });
-
-                    // Merge and sort all transactions by date
-                    $allTransactions = $purchases->concat($payments)->sortBy('date')->values();
-
-                    $balance = $openingBalance;
-                    $ledgerTransactions = [];
-
-                    foreach ($allTransactions as $index => $trn) {
-                        $balance += $trn['credit'] - $trn['debit'];
-
-                        $ledgerTransactions[] = [
-                            'id' => $index + 1,
-                            'date' => $trn['date'],
-                            'description' => $trn['description'],
-                            'reference' => $trn['reference'],
-                            'debit' => $trn['debit'],
-                            'credit' => $trn['credit'],
-                            'balance' => $balance,
-                        ];
-                    }
-
-                    $data['selectedSupplier'] = $supplier;
-                    $data['transactions'] = $ledgerTransactions;
-                    $data['fromDate'] = $fromDate->format('Y-m-d');
-                    $data['toDate'] = $toDate->format('Y-m-d');
-                    $data['openingBalance'] = $openingBalance;
-                    $data['closingBalance'] = $balance;
-                }
-            }
-
-            return Inertia::render('Reports/SupplierLedger', $data);
-        })->name('supplier-ledger');
         
         Route::get('stock-bin-card', function () {
             $company = null;
@@ -605,61 +462,6 @@ Route::middleware(['auth:web,company'])->group(function () {
 
             return Inertia::render('Reports/StockBinCard', $data);
         })->name('stock-bin-card');
-        
-        Route::get('supplier-details', function () {
-            $company = null;
-            if (auth('company')->check()) {
-                $company = auth('company')->user();
-            } else {
-                $user = auth('web')->user();
-                $company = $user ? $user->company : \App\Models\Company::first();
-            }
-
-            // Ensure company is not null, use default if needed
-            if (!$company) {
-                $company = (object) [
-                    'company_code' => 'C01',
-                    'name' => 'VISION COPIER',
-                    'primary_color' => '#00aeef',
-                    'secondary_color' => '#737578'
-                ];
-            }
-
-            // Get suppliers from address table - try different AdrTypKy values or get all non-customer addresses
-            $suppliers = \App\Models\Address::where('company_code', $company->company_code ?? 'C01')
-                ->where('AdrTypKy', '!=', 1) // Not customers
-                ->whereNotNull('AdrTypKy')
-                ->when(request('from_date'), function ($query) {
-                    return $query->whereDate('created_at', '>=', request('from_date'));
-                })
-                ->when(request('to_date'), function ($query) {
-                    return $query->whereDate('created_at', '<=', request('to_date'));
-                })
-                ->orderBy('AdrCd')
-                ->get();
-
-            // If no suppliers found with AdrTypKy != 1, try to get from acc_mas and match with addresses
-            if ($suppliers->isEmpty()) {
-                $supplierAccKeys = AccMas::where('AccTyp', 'SUPPLIER')
-                    ->where('company_code', $company->company_code ?? 'C01')
-                    ->pluck('AccKy');
-
-                $suppliers = \App\Models\Address::whereIn('AccKy', $supplierAccKeys)
-                    ->when(request('from_date'), function ($query) {
-                        return $query->whereDate('created_at', '>=', request('from_date'));
-                    })
-                    ->when(request('to_date'), function ($query) {
-                        return $query->whereDate('created_at', '<=', request('to_date'));
-                    })
-                    ->orderBy('AdrCd')
-                    ->get();
-            }
-
-            return Inertia::render('Reports/SupplierDetails', [
-                'suppliers' => $suppliers,
-                'company' => $company
-            ]);
-        })->name('supplier-details');
 
         // Collection Report
         Route::get('collection-report', [CollectionReportController::class, 'index'])->name('collection-report');
@@ -674,23 +476,5 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::get('sales-history-data', [StockInHandReportController::class, 'getSalesHistory'])->name('sales-history-data');
         Route::get('item-sales-transactions/{itemId}', [StockInHandReportController::class, 'getItemSalesTransactions'])->name('item-sales-transactions');
     });
-
-    // Stock Transfer routes
-    Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store']);
-    Route::get('stock-transfers/get-product-stock', [StockTransferController::class, 'getProductStock'])->name('stock-transfers.get-product-stock');
-    Route::post('stock-transfers/download-pdf', [StockTransferController::class, 'downloadPdf'])->name('stock-transfers.download-pdf');
-    Route::get('stock-transfers/{stockTransfer}/download-pdf', [StockTransferController::class, 'downloadPdfById'])->name('stock-transfers.download-pdf-id');
-
-    // Wastage Management routes (Item Wastage - ItemPriceDet)
-    Route::get('wastages/search-serial', [\App\Http\Controllers\WastageController::class, 'searchBySerial'])->name('wastages.search-serial');
-    Route::get('wastages/unified-search', [\App\Http\Controllers\WastageController::class, 'unifiedSearch'])->name('wastages.unified-search');
-    Route::get('wastages/product-batches', [\App\Http\Controllers\WastageController::class, 'getProductBatches'])->name('wastages.product-batches');
-    Route::resource('wastages', \App\Http\Controllers\WastageController::class);
-
-    // Supplier Returns routes
-    Route::get('supplier-returns/search-suppliers', [\App\Http\Controllers\SupplierReturnController::class, 'searchSuppliers'])->name('supplier-returns.search-suppliers');
-    Route::get('supplier-returns/search-items', [\App\Http\Controllers\SupplierReturnController::class, 'searchItems'])->name('supplier-returns.search-items');
-    Route::resource('supplier-returns', \App\Http\Controllers\SupplierReturnController::class);
-});
 
 require __DIR__.'/settings.php';
