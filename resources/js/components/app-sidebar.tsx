@@ -48,7 +48,7 @@ const companyNavItems: RoleNavItem[] = [
     },
     {
         title: 'User Management',
-        href: '/user-management',
+        href: '/users',
         icon: Users,
         roles: ['company_admin'],
     },

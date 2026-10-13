@@ -57,9 +57,9 @@ Route::middleware(['auth:web,company'])->group(function () {
         return \App\Models\Company::first();
     });
 
-    Route::get('/user-management', function () {
-        return Inertia::render('user-management');
-    })->name('user-management');
+    Route::get('/user-management', [UserController::class, 'index'])->name('user-management');
+    Route::resource('users', UserController::class);
+    Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->name('users.toggle');
 
     // Admin routes
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -75,11 +75,11 @@ Route::middleware(['auth:web,company'])->group(function () {
     Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
 
     // API routes for user management
-    Route::prefix('api')->group(function () {
+    Route::prefix('api')->name('api.')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::get('user-roles', [UserRoleController::class, 'index']);
         Route::get('sections', [SectionController::class, 'apiIndex']);
-        Route::get('companies', [CompanyController::class, 'index']);
+        Route::get('companies', [\App\Http\Controllers\Api\CompanyController::class, 'index']);
     });
 });
 
