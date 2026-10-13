@@ -2,7 +2,6 @@ import { SettingMenuItem } from './menus/superadmin-setting';
 import { getSuperAdminSettings } from './menus/superadmin-setting';
 import { getCompanySettings } from './menus/company-setting';
 import { usePage } from '@inertiajs/react';
-import { useTranslation } from 'react-i18next';
 
 // Get role-based core settings items
 const getCoreSettingsItems = (userRoles: string[], t: (key: string) => string): SettingMenuItem[] => {
@@ -57,7 +56,9 @@ export const allSettingsItems = (authParam?: any, tParam?: (key: string) => stri
     if (!auth) {
         try {
             auth = (usePage().props as any)?.auth;
-        } catch {}
+        } catch {
+            // Outside Inertia context
+        }
     }
     if (!t) {
         t = (key: string) => key;

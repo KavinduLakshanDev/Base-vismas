@@ -119,8 +119,7 @@ export function AppSidebar() {
 
     // Determine user role and type
     const userType = user?.user_type as string | undefined;
-    // @ts-ignore - role property comes from eager load but might not be in TS definition yet
-    const roleSlug = user?.role?.slug as string | undefined;
+    const roleSlug = (user as any)?.role?.slug as string | undefined;
 
     // Helper to check if item should be shown
     const shouldShow = (item: RoleNavItem) => {

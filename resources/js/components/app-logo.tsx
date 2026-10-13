@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
-import { useBrand } from '@/contexts/brand-context';
+import { useOptionalBrand } from '@/contexts/brand-context';
 import { getImagePath } from '@/utils/helpers';
 import AppLogoIcon from './app-logo-icon';
 
@@ -10,12 +10,7 @@ export interface AppLogoProps {
 }
 
 export default function AppLogo({ className = '', showText = true }: AppLogoProps) {
-    let brandContext: any = null;
-    try {
-        brandContext = useBrand();
-    } catch {
-        // Outside BrandProvider
-    }
+    const brandContext = useOptionalBrand();
 
     const pageProps = usePage()?.props as any;
     const adminSettings = pageProps?.adminAllSetting || {};

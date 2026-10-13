@@ -178,7 +178,7 @@ const formatCurrency = (amount: number | string, pageProps?: any): string => {
     const currencySymbolSpace = getCompanySetting('currencySymbolSpace', pageProps) === '1';
     const currencySymbolPosition = getCompanySetting('currencySymbolPosition', pageProps) || 'before';
 
-    let finalAmount = floatNumber ? num : Math.floor(num);
+    const finalAmount = floatNumber ? num : Math.floor(num);
     const parts = Number(finalAmount).toFixed(decimalPlaces).split('.');
 
     if (thousandsSeparator !== 'none') {
@@ -205,7 +205,7 @@ const formatNumber = (amount: number | string, pageProps?: any): string => {
     const thousandsSeparator = getCompanySetting('thousandsSeparator', pageProps) || ',';
     const floatNumber = getCompanySetting('floatNumber', pageProps) !== '0';
 
-    let finalAmount = floatNumber ? num : Math.floor(num);
+    const finalAmount = floatNumber ? num : Math.floor(num);
     const parts = Number(finalAmount).toFixed(decimalPlaces).split('.');
 
     if (thousandsSeparator !== 'none') {
@@ -228,7 +228,7 @@ const formatAdminCurrency = (amount: number | string, pageProps?: any): string =
     const currencySymbolSpace = getAdminSetting('currencySymbolSpace', pageProps) === '1';
     const currencySymbolPosition = getAdminSetting('currencySymbolPosition', pageProps) || 'before';
 
-    let finalAmount = floatNumber ? num : Math.floor(num);
+    const finalAmount = floatNumber ? num : Math.floor(num);
     const parts = Number(finalAmount).toFixed(decimalPlaces).split('.');
 
     if (thousandsSeparator !== 'none') {

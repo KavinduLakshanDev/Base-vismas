@@ -288,7 +288,7 @@ const Repeater = React.forwardRef<RepeaterRef, RepeaterProps>(
               <SelectTrigger className={field.className}>
                 <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
-              <SelectContent searchable={(field.options?.length || 0) > 10}>
+              <SelectContent>
                 {field.options?.map((option, optionIndex) => (
                   <SelectItem key={`${item.id}-${field.name}-${option.value}-${optionIndex}`} value={option.value}>
                     {option.label}
@@ -317,7 +317,7 @@ const Repeater = React.forwardRef<RepeaterRef, RepeaterProps>(
             </div>
           )
 
-        case 'switch':
+        case 'switch': {
           const switchId = `switch-${item.id}-${field.name}`;
           return (
             <div className="flex items-center space-x-2">
@@ -330,6 +330,7 @@ const Repeater = React.forwardRef<RepeaterRef, RepeaterProps>(
               <label htmlFor={switchId} className="text-sm font-medium cursor-pointer">{field.label}</label>
             </div>
           )
+        }
 
         case 'radio':
           return (
@@ -354,7 +355,7 @@ const Repeater = React.forwardRef<RepeaterRef, RepeaterProps>(
           return (
             <DatePicker
               value={fieldValue || ''}
-              onChange={(value) => updateItem(item.id, field.name, value)}
+              onChange={(value: string) => updateItem(item.id, field.name, value)}
               placeholder={field.placeholder}
               className={field.className}
             />

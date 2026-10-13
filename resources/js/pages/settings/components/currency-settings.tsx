@@ -133,7 +133,7 @@ export default function CurrencySettings({ userSettings = {}, auth }: CurrencySe
             }
 
             // Join with decimal separator
-            let formattedNumber = parts.join(currencySettings.decimalSeparator);
+            const formattedNumber = parts.join(currencySettings.decimalSeparator);
 
             // Get currency symbol from the currencies array
             const selectedCurrency = currencies.find((c: CurrencyProps) => c.code === currencySettings.defaultCurrency);

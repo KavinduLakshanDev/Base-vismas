@@ -28,12 +28,7 @@ interface BrandContextType {
 
 const BrandContext = createContext<BrandContextType | undefined>(undefined);
 
-export function BrandProvider({ children }: { children: ReactNode }) {
-  const parentContext = useContext(BrandContext);
-  if (parentContext) {
-    return <>{children}</>;
-  }
-
+function InnerBrandProvider({ children }: { children: ReactNode }) {
   const { adminAllSetting, companyAllSetting, globalSettings: pageGlobalSettings } = usePage().props as any;
 
   // Merge settings from all available sources
@@ -211,6 +206,18 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       {children}
     </BrandContext.Provider>
   );
+}
+
+export function BrandProvider({ children }: { children: ReactNode }) {
+  const parentContext = useContext(BrandContext);
+  if (parentContext) {
+    return <>{children}</>;
+  }
+  return <InnerBrandProvider>{children}</InnerBrandProvider>;
+}
+
+export function useOptionalBrand() {
+  return useContext(BrandContext);
 }
 
 export function useBrand() {

@@ -36,7 +36,7 @@ export function Pagination({ data, routeName, filters = {}, onPageChange }: Pagi
     const pages = [];
     const showPages = 5;
     let startPage = Math.max(1, current_page - Math.floor(showPages / 2));
-    let endPage = Math.min(last_page, startPage + showPages - 1);
+    const endPage = Math.min(last_page, startPage + showPages - 1);
 
     if (endPage - startPage + 1 < showPages) {
       startPage = Math.max(1, endPage - showPages + 1);
