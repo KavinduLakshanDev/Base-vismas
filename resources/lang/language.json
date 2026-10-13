@@ -1,0 +1,26 @@
+[
+    {
+        "code": "en",
+        "name": "English",
+        "countryCode": "GB",
+        "enabled": true
+    },
+    {
+        "code": "ru",
+        "name": "Русский",
+        "countryCode": "RU",
+        "enabled": false
+    },
+    {
+        "code": "sin",
+        "name": "සිංහල",
+        "countryCode": "LK",
+        "enabled": true
+    },
+    {
+        "code": "zh",
+        "name": "中文",
+        "countryCode": "CN",
+        "enabled": false
+    }
+]

@@ -15,7 +15,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Code, Database, File, FileText, Folder, LayoutGrid, Layers, Users, Package, Ruler, Truck, Route, User, Box, Shield, Key, ShoppingCart, Receipt, ArrowRightLeft, Wrench, Printer as PrinterIcon, Plus, History, DollarSign, UserCheck, Gift, ScrollText, Tag, AlertTriangle, Trash2, RefreshCw, Building2 } from 'lucide-react';
+import { BookOpen, Code, Database, File, FileText, Folder, LayoutGrid, Layers, Users, Package, Ruler, Truck, Route, User, Box, Shield, Key, ShoppingCart, Receipt, ArrowRightLeft, Wrench, Printer as PrinterIcon, Plus, History, DollarSign, UserCheck, Gift, ScrollText, Tag, AlertTriangle, Trash2, RefreshCw, Building2, Settings } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 import { resolveUrl } from '@/lib/utils';
@@ -57,6 +57,12 @@ const companyNavItems: RoleNavItem[] = [
         href: '/media-library',
         icon: Folder,
         roles: ['company_admin', 'section_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Settings',
+        href: '/settings',
+        icon: Settings,
+        roles: ['company_admin', 'super_admin'],
     },
 ];
 

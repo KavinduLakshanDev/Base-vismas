@@ -1,4 +1,5 @@
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
+import { BrandProvider } from '@/contexts/brand-context';
 import { type BreadcrumbItem } from '@/types';
 import { type ReactNode } from 'react';
 
@@ -10,13 +11,15 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs, hideFooter, footerModuleName, ...props }: AppLayoutProps) => (
-    <AppLayoutTemplate
-        breadcrumbs={breadcrumbs}
-        hideFooter={hideFooter}
-        footerModuleName={footerModuleName}
-        {...props}
-    >
-        {children}
-    </AppLayoutTemplate>
+    <BrandProvider>
+        <AppLayoutTemplate
+            breadcrumbs={breadcrumbs}
+            hideFooter={hideFooter}
+            footerModuleName={footerModuleName}
+            {...props}
+        >
+            {children}
+        </AppLayoutTemplate>
+    </BrandProvider>
 );
 
