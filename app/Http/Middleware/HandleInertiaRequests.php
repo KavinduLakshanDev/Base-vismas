@@ -47,10 +47,15 @@ class HandleInertiaRequests extends Middleware
             $user->loadMissing('role.permissions');
         }
 
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
+        $activeCompany = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
+
         $company = $request->user('company');
         if (! $company) {
             if ($user instanceof \App\Models\Company) {
                 $company = $user;
+            } elseif ($activeCompany) {
+                $company = $activeCompany;
             } elseif ($user instanceof \App\Models\User) {
                 $company = $user->company;
             }
@@ -63,6 +68,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user,
                 'company' => $company,
+                'active_company' => $activeCompany,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'ziggy' => fn () => array_merge((new Ziggy)->toArray(), [

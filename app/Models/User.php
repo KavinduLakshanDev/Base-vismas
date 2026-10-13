@@ -74,6 +74,14 @@ class User extends Authenticatable
         ];
     }
 
+    public function getCompanyCodeAttribute($value)
+    {
+        if ($this->user_type === 'super_admin') {
+            return session('active_company_code', $value);
+        }
+        return $value;
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_code', 'company_code');

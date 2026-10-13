@@ -20,8 +20,18 @@ Route::middleware(['auth:web,company', 'verified'])->group(function () {
         if (auth()->guard('company')->check()) {
             return redirect()->route('company.dashboard');
         }
+
+        $user = auth()->user();
+        if ($user && $user->user_type === 'super_admin' && !session('active_company_code') && !$user->getRawOriginal('company_code')) {
+            return redirect()->route('company.select');
+        }
+
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::get('select-company', [\App\Http\Controllers\CompanySelectionController::class, 'index'])->name('company.select');
+    Route::post('select-company', [\App\Http\Controllers\CompanySelectionController::class, 'select'])->name('company.select.store');
+    Route::post('companies/{company}/toggle-status', [\App\Http\Controllers\CompanySelectionController::class, 'toggleStatus'])->name('company.toggle-status');
 });
 
 Route::middleware('guest:company')->group(function () {

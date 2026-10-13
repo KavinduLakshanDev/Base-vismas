@@ -32,6 +32,7 @@ class CompanySeeder extends Seeder
                 'vat_rate' => 18.00,
                 'vat_no' => '123456789V',
                 'vat_effective_date' => now(),
+                'is_active' => true,
             ]
         );
 
@@ -55,6 +56,7 @@ class CompanySeeder extends Seeder
                 'vat_rate' => 0.00, // No VAT for MALIBO
                 'vat_no' => null,
                 'vat_effective_date' => null,
+                'is_active' => true,
             ]
         );
     }

@@ -30,6 +30,7 @@ class Company extends Authenticatable
         'vat_no',
         'vat_effective_date',
         'parent_id',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -39,6 +40,7 @@ class Company extends Authenticatable
     protected $casts = [
         'vat_effective_date' => 'date',
         'password' => 'hashed',
+        'is_active' => 'boolean',
     ];
 
     protected $appends = [
