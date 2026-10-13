@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-
-// Declare route function (available globally via Ziggy)
-declare function route(name: string, params?: any): string;
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import InputError from '@/components/input-error';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Save, Search, Users, Shield, Key, Building2 } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Shield, Key, Building2, Building } from 'lucide-react';
 import { toast } from 'sonner';
+import { t } from '@/lib/i18n';
+
+declare function route(name: string, params?: any): string;
 
 interface Permission {
     id: number;
@@ -61,17 +61,9 @@ interface Props {
     };
 }
 
-export default function Create({ permissions, companies, sections, stats }: Props) {
+export default function Create({ permissions, companies, sections }: Props) {
     const [permissionSearch, setPermissionSearch] = useState('');
     const [selectedAll, setSelectedAll] = useState(false);
-
-    // Calculate stats if not provided
-    const defaultStats = {
-        totalRoles: stats?.totalRoles || 0,
-        systemRoles: stats?.systemRoles || 0,
-        customRoles: stats?.customRoles || 0,
-        totalPermissions: permissions.length,
-    };
 
     const { data, setData, post, processing, errors, reset } = useForm<FormData>({
         name: '',
@@ -91,12 +83,12 @@ export default function Create({ permissions, companies, sections, stats }: Prop
                 reset();
                 toast.success('Role created successfully');
             },
-            onError: (errors) => {
-                const errorMessages = Object.values(errors).flat();
-                errorMessages.forEach(message => {
+            onError: (errs) => {
+                const errorMessages = Object.values(errs).flat();
+                errorMessages.forEach((message) => {
                     toast.error(message as string);
                 });
-            }
+            },
         });
     };
 
@@ -111,8 +103,7 @@ export default function Create({ permissions, companies, sections, stats }: Prop
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value;
         setData('name', name);
-        
-        // Auto-generate slug if it's empty or was auto-generated
+
         if (!data.slug || data.slug === generateSlug(data.name)) {
             setData('slug', generateSlug(name));
         }
@@ -120,12 +111,10 @@ export default function Create({ permissions, companies, sections, stats }: Prop
 
     const handlePermissionToggle = (permissionId: number) => {
         const newPermissions = data.permissions.includes(permissionId)
-            ? data.permissions.filter(id => id !== permissionId)
+            ? data.permissions.filter((id) => id !== permissionId)
             : [...data.permissions, permissionId];
-        
+
         setData('permissions', newPermissions);
-        
-        // Update select all state
         setSelectedAll(newPermissions.length === filteredPermissions.length);
     };
 
@@ -134,52 +123,53 @@ export default function Create({ permissions, companies, sections, stats }: Prop
             setData('permissions', []);
             setSelectedAll(false);
         } else {
-            setData('permissions', filteredPermissions.map(p => p.id));
+            setData('permissions', filteredPermissions.map((p) => p.id));
             setSelectedAll(true);
         }
     };
 
-    const filteredPermissions = permissions.filter(permission =>
-        permission.name.toLowerCase().includes(permissionSearch.toLowerCase()) ||
-        permission.slug.toLowerCase().includes(permissionSearch.toLowerCase()) ||
-        (permission.description && permission.description.toLowerCase().includes(permissionSearch.toLowerCase()))
+    const filteredPermissions = permissions.filter(
+        (permission) =>
+            permission.name.toLowerCase().includes(permissionSearch.toLowerCase()) ||
+            permission.slug.toLowerCase().includes(permissionSearch.toLowerCase()) ||
+            (permission.description &&
+                permission.description.toLowerCase().includes(permissionSearch.toLowerCase())),
     );
 
     React.useEffect(() => {
-        setSelectedAll(data.permissions.length === filteredPermissions.length && filteredPermissions.length > 0);
+        setSelectedAll(
+            data.permissions.length === filteredPermissions.length &&
+                filteredPermissions.length > 0,
+        );
     }, [data.permissions, filteredPermissions]);
 
     return (
         <AppLayout>
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
-                <Head title="Create Role" />
+            <Head title={t('Create Role')} />
 
+            <div className="min-h-screen bg-slate-50">
                 {/* Header */}
-                <header className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 shadow-lg">
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between py-6">
                             <div className="flex items-center space-x-4">
-                                <div className="rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 p-3 shadow-lg">
-                                    <Shield className="h-7 w-7 text-white" />
+                                <Link
+                                    href={route('roles.index')}
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Plus className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold text-white">
-                                        Role Management
+                                        {t('Create Role')}
                                     </h1>
-                                    <p className="text-sm text-sky-200">
-                                        Create new roles and assign permissions
+                                    <p className="text-sm text-white/80">
+                                        {t('Define new roles and configure permissions')}
                                     </p>
                                 </div>
-                            </div>
-                            <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
-                                <span className="text-sm text-white font-medium">
-                                    {new Date().toLocaleDateString('en-GB', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })}
-                                </span>
                             </div>
                         </div>
                     </div>
@@ -187,392 +177,294 @@ export default function Create({ permissions, companies, sections, stats }: Prop
 
                 {/* Main Content */}
                 <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0">
-                        {/* Stats Cards */}
-                        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Users className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Total Roles</p>
-                                        <p className="text-2xl font-bold text-gray-900">{defaultStats.totalRoles}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {t('Create New Role')}
+                        </h1>
+                        <p className="text-slate-600 text-lg">
+                            {t('Configure access tier, scope, and specific system capabilities')}
+                        </p>
+                    </div>
 
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Shield className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">System Roles</p>
-                                        <p className="text-2xl font-bold text-red-600">{defaultStats.systemRoles}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
-
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Building2 className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Custom Roles</p>
-                                        <p className="text-2xl font-bold text-green-600">{defaultStats.customRoles}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
-
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Key className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Total Permissions</p>
-                                        <p className="text-2xl font-bold text-purple-600">{defaultStats.totalPermissions}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
-                        </div>
-
-                        {/* Main Content Card */}
-                        <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50 shadow-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 px-6 py-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-white">
-                                            Create New Role
-                                        </h3>
-                                        <p className="text-sky-200 text-sm mt-1">
-                                            Define role details and assign appropriate permissions
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <Link
-                                            href={route('roles.index')}
-                                            className="inline-flex items-center rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20"
-                                        >
-                                            <ArrowLeft className="mr-2 h-4 w-4" />
-                                            Back to Roles
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-6">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* Role Details */}
-                                        <Card className="border-sky-100 shadow-sm">
-                                            <CardHeader className="bg-gradient-to-r from-sky-50 to-blue-50 border-b border-sky-100">
-                                                <CardTitle className="flex items-center text-sky-900">
-                                                    <Shield className="mr-2 h-5 w-5" />
-                                                    Role Details
-                                                </CardTitle>
-                                                <CardDescription>
-                                                    Basic information about the role
-                                                </CardDescription>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4 p-6">
-                                                {/* Name */}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                                                        Role Name <span className="text-red-500">*</span>
-                                                    </Label>
-                                                    <Input
-                                                        id="name"
-                                                        type="text"
-                                                        value={data.name}
-                                                        onChange={handleNameChange}
-                                                        placeholder="e.g., Store Manager"
-                                                        disabled={processing}
-                                                        className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.name ? 'border-red-500' : ''}`}
-                                                    />
-                                                    {errors.name && (
-                                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                                    )}
-                                                </div>
-
-                                                {/* Slug */}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="slug" className="text-sm font-medium text-gray-700">Role Slug</Label>
-                                                    <Input
-                                                        id="slug"
-                                                        type="text"
-                                                        value={data.slug}
-                                                        onChange={(e) => setData('slug', e.target.value)}
-                                                        placeholder="e.g., store_manager"
-                                                        disabled={processing}
-                                                        className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.slug ? 'border-red-500' : ''}`}
-                                                    />
-                                                    {errors.slug && (
-                                                        <p className="text-sm text-red-600">{errors.slug}</p>
-                                                    )}
-                                                </div>
-
-                                                {/* Description */}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">Description</Label>
-                                                    <Textarea
-                                                        id="description"
-                                                        value={data.description}
-                                                        onChange={(e) => setData('description', e.target.value)}
-                                                        placeholder="Describe the role responsibilities..."
-                                                        rows={3}
-                                                        disabled={processing}
-                                                        className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.description ? 'border-red-500' : ''}`}
-                                                    />
-                                                    {errors.description && (
-                                                        <p className="text-sm text-red-600">{errors.description}</p>
-                                                    )}
-                                                </div>
-
-                                                {/* Level */}
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="level" className="text-sm font-medium text-gray-700">
-                                                        Access Level <span className="text-red-500">*</span>
-                                                    </Label>
-                                                    <Select
-                                                        value={data.level}
-                                                        onValueChange={(value: typeof data.level) => setData('level', value)}
-                                                        disabled={processing}
-                                                    >
-                                                        <SelectTrigger className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.level ? 'border-red-500' : ''}`}>
-                                                            <SelectValue placeholder="Select access level" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="user">User</SelectItem>
-                                                            <SelectItem value="branch_admin">Branch Admin</SelectItem>
-                                                            <SelectItem value="company_admin">Company Admin</SelectItem>
-                                                            <SelectItem value="super_admin">Super Admin</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    {errors.level && (
-                                                        <p className="text-sm text-red-600">{errors.level}</p>
-                                                    )}
-                                                </div>
-
-                                                {/* Company */}
-                                                {companies.length > 0 && (
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="company_id" className="text-sm font-medium text-gray-700">Company</Label>
-                                                        <Select
-                                                            value={data.company_id}
-                                                            onValueChange={(value) => {
-                                                                setData('company_id', value === 'none' ? '' : value);
-                                                                setData('section_id', ''); // Reset section when company changes
-                                                            }}
-                                                            disabled={processing}
-                                                        >
-                                                            <SelectTrigger className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.company_id ? 'border-red-500' : ''}`}>
-                                                                <SelectValue placeholder="Select company (optional)" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="none">No Company (System Wide)</SelectItem>
-                                                                {companies.map((company) => (
-                                                                    <SelectItem key={company.id} value={company.id.toString()}>
-                                                                        {company.name}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {errors.company_id && (
-                                                            <p className="text-sm text-red-600">{errors.company_id}</p>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* Section */}
-                                                {sections.length > 0 && data.company_id && (
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="section_id" className="text-sm font-medium text-gray-700">Section</Label>
-                                                        <Select
-                                                            value={data.section_id}
-                                                            onValueChange={(value) => setData('section_id', value === 'none' ? '' : value)}
-                                                            disabled={processing}
-                                                        >
-                                                            <SelectTrigger className={`border-sky-200 focus:border-sky-400 focus:ring-sky-400 ${errors.section_id ? 'border-red-500' : ''}`}>
-                                                                <SelectValue placeholder="Select section (optional)" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="none">No Section (Company Wide)</SelectItem>
-                                                                {sections.map((section) => (
-                                                                    <SelectItem key={section.id} value={section.id.toString()}>
-                                                                        {section.name}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                        {errors.section_id && (
-                                                            <p className="text-sm text-red-600">{errors.section_id}</p>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* System Role */}
-                                                <div className="flex items-center space-x-2 pt-2">
-                                                    <Checkbox
-                                                        id="is_system_role"
-                                                        checked={data.is_system_role}
-                                                        onCheckedChange={(checked) => setData('is_system_role', !!checked)}
-                                                        disabled={processing}
-                                                        className="border-sky-300 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
-                                                    />
-                                                    <Label
-                                                        htmlFor="is_system_role"
-                                                        className="text-sm font-normal text-gray-700"
-                                                    >
-                                                        System role (cannot be deleted by regular users)
-                                                    </Label>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-
-                                        {/* Permissions */}
-                                        <Card className="border-sky-100 shadow-sm">
-                                            <CardHeader className="bg-gradient-to-r from-sky-50 to-blue-50 border-b border-sky-100">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <CardTitle className="flex items-center text-sky-900">
-                                                            <Key className="mr-2 h-5 w-5" />
-                                                            Permissions
-                                                        </CardTitle>
-                                                        <CardDescription>
-                                                            Select permissions for this role
-                                                        </CardDescription>
-                                                    </div>
-                                                    <Badge variant="secondary" className="bg-sky-100 text-sky-800 border-sky-200">
-                                                        {data.permissions.length} selected
-                                                    </Badge>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="space-y-4 p-6">
-                                                {/* Search */}
-                                                <div className="relative">
-                                                    <Search className="absolute left-3 top-3 h-4 w-4 text-sky-500" />
-                                                    <Input
-                                                        placeholder="Search permissions..."
-                                                        value={permissionSearch}
-                                                        onChange={(e) => setPermissionSearch(e.target.value)}
-                                                        className="pl-10 border-sky-200 focus:border-sky-400 focus:ring-sky-400"
-                                                    />
-                                                </div>
-
-                                                {/* Select All */}
-                                                <div className="flex items-center space-x-2 py-2 border-b border-sky-100">
-                                                    <Checkbox
-                                                        id="select_all"
-                                                        checked={selectedAll}
-                                                        onCheckedChange={handleSelectAll}
-                                                        disabled={processing || filteredPermissions.length === 0}
-                                                        className="border-sky-300 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
-                                                    />
-                                                    <Label htmlFor="select_all" className="font-medium text-gray-700">
-                                                        Select All ({filteredPermissions.length} permissions)
-                                                    </Label>
-                                                </div>
-
-                                                {/* Permissions List */}
-                                                <div className="space-y-3 max-h-96 overflow-y-auto">
-                                                    {filteredPermissions.length > 0 ? (
-                                                        filteredPermissions.map((permission) => (
-                                                            <div key={permission.id} className="flex items-start space-x-3 p-3 rounded-lg border border-sky-100 bg-gradient-to-r from-white to-sky-50/30 hover:from-sky-50/50 hover:to-sky-100/30 transition-colors">
-                                                                <Checkbox
-                                                                    id={`permission_${permission.id}`}
-                                                                    checked={data.permissions.includes(permission.id)}
-                                                                    onCheckedChange={() => handlePermissionToggle(permission.id)}
-                                                                    disabled={processing}
-                                                                    className="border-sky-300 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600 mt-0.5"
-                                                                />
-                                                                <div className="flex-1 min-w-0">
-                                                                    <Label
-                                                                        htmlFor={`permission_${permission.id}`}
-                                                                        className="font-medium cursor-pointer text-gray-900"
-                                                                    >
-                                                                        {permission.name}
-                                                                    </Label>
-                                                                    <div className="mt-1">
-                                                                        <Badge variant="outline" className="text-xs border-sky-200 text-sky-700">
-                                                                            {permission.slug}
-                                                                        </Badge>
-                                                                    </div>
-                                                                    {permission.description && (
-                                                                        <p className="text-sm text-gray-600 mt-1">
-                                                                            {permission.description}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <div className="text-center py-8 text-gray-500">
-                                                            <Key className="mx-auto mb-4 h-12 w-12 opacity-50 text-sky-400" />
-                                                            <p className="text-sm">
-                                                                {permissionSearch ? 'No permissions match your search' : 'No permissions available'}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {errors.permissions && (
-                                                    <p className="text-sm text-red-600">{errors.permissions}</p>
-                                                )}
-                                            </CardContent>
-                                        </Card>
+                    {/* Form Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Left Column: Role Details */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center space-x-3 mb-4">
+                                        <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                            <Shield className="w-5 h-5 text-vismass-blue" />
+                                        </div>
+                                        <h2 className="text-xl font-semibold text-slate-800">
+                                            {t('Role Details')}
+                                        </h2>
                                     </div>
 
-                                    {/* Actions */}
-                                    <Card className="border-sky-100 shadow-sm">
-                                        <CardContent className="pt-6 bg-gradient-to-r from-sky-50 to-blue-50 border-t border-sky-100">
-                                            <div className="flex gap-3 justify-end">
-                                                <Button
-                                                    type="submit"
-                                                    disabled={processing}
-                                                    className="min-w-[140px] bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-md"
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name" className="text-sm font-medium text-slate-700 flex items-center">
+                                                <Shield className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                {t('Role Name')} *
+                                            </Label>
+                                            <Input
+                                                id="name"
+                                                value={data.name}
+                                                onChange={handleNameChange}
+                                                required
+                                                className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                                placeholder="e.g., Store Manager, Cashier"
+                                            />
+                                            <InputError message={errors.name} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="slug" className="text-sm font-medium text-slate-700 flex items-center">
+                                                <Key className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                {t('Role Slug')} *
+                                            </Label>
+                                            <Input
+                                                id="slug"
+                                                value={data.slug}
+                                                onChange={(e) => setData('slug', e.target.value)}
+                                                required
+                                                className="font-mono border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                                placeholder="e.g., store_manager"
+                                            />
+                                            <InputError message={errors.slug} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="level" className="text-sm font-medium text-slate-700 flex items-center">
+                                                <Building className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                {t('Access Level')} *
+                                            </Label>
+                                            <Select
+                                                value={data.level}
+                                                onValueChange={(value: typeof data.level) => setData('level', value)}
+                                            >
+                                                <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
+                                                    <SelectValue placeholder="Select access level" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="user">{t('User')}</SelectItem>
+                                                    <SelectItem value="branch_admin">{t('Branch Admin')}</SelectItem>
+                                                    <SelectItem value="company_admin">{t('Company Admin')}</SelectItem>
+                                                    <SelectItem value="super_admin">{t('Super Admin')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={errors.level} />
+                                        </div>
+
+                                        {companies.length > 0 && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="company_id" className="text-sm font-medium text-slate-700 flex items-center">
+                                                    <Building2 className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                    {t('Company Scope')}
+                                                </Label>
+                                                <Select
+                                                    value={data.company_id}
+                                                    onValueChange={(value) => {
+                                                        setData('company_id', value === 'none' ? '' : value);
+                                                        setData('section_id', '');
+                                                    }}
                                                 >
-                                                    {processing ? (
-                                                        <>
-                                                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                                            Creating...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Save className="mr-2 h-4 w-4" />
-                                                            Create Role
-                                                        </>
-                                                    )}
-                                                </Button>
-                                                <Link href={route('roles.index')}>
-                                                    <Button variant="outline" disabled={processing} className="border-sky-200 hover:bg-sky-50">
-                                                        Cancel
-                                                    </Button>
-                                                </Link>
+                                                    <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
+                                                        <SelectValue placeholder={t('Select company (optional)')} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">{t('System Wide (All Companies)')}</SelectItem>
+                                                        {companies.map((c) => (
+                                                            <SelectItem key={c.id} value={c.id.toString()}>
+                                                                {c.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError message={errors.company_id} />
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                </form>
+                                        )}
+
+                                        {sections.length > 0 && data.company_id && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="section_id" className="text-sm font-medium text-slate-700">
+                                                    {t('Section / Branch Scope')}
+                                                </Label>
+                                                <Select
+                                                    value={data.section_id}
+                                                    onValueChange={(value) => setData('section_id', value === 'none' ? '' : value)}
+                                                >
+                                                    <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
+                                                        <SelectValue placeholder={t('Select section (optional)')} />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">{t('Entire Company')}</SelectItem>
+                                                        {sections.map((s) => (
+                                                            <SelectItem key={s.id} value={s.id.toString()}>
+                                                                {s.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError message={errors.section_id} />
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="description" className="text-sm font-medium text-slate-700">
+                                                {t('Description')}
+                                            </Label>
+                                            <Textarea
+                                                id="description"
+                                                value={data.description}
+                                                onChange={(e) => setData('description', e.target.value)}
+                                                rows={3}
+                                                className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                                placeholder="Describe the scope and responsibilities of this role..."
+                                            />
+                                            <InputError message={errors.description} />
+                                        </div>
+
+                                        <div className="flex items-center space-x-3 pt-2">
+                                            <Checkbox
+                                                id="is_system_role"
+                                                checked={data.is_system_role}
+                                                onCheckedChange={(checked) => setData('is_system_role', !!checked)}
+                                                className="border-slate-300 data-[state=checked]:bg-vismass-blue data-[state=checked]:border-vismass-blue"
+                                            />
+                                            <Label htmlFor="is_system_role" className="text-sm font-medium text-slate-700 cursor-pointer">
+                                                {t('System role')} <span className="text-xs text-slate-500 font-normal">({t('Protected against deletion by regular administrators')})</span>
+                                            </Label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Permissions Selector */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                                <Key className="w-5 h-5 text-vismass-blue" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-semibold text-slate-800">
+                                                    {t('Permissions')}
+                                                </h2>
+                                                <p className="text-xs text-slate-500">
+                                                    {t('Select permissions assigned to this role')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="bg-blue-50 text-vismass-blue text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-200">
+                                            {data.permissions.length} {t('selected')}
+                                        </span>
+                                    </div>
+
+                                    {/* Permission Search */}
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <Input
+                                            placeholder={t('Search permissions...')}
+                                            value={permissionSearch}
+                                            onChange={(e) => setPermissionSearch(e.target.value)}
+                                            className="pl-9 border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20 text-sm"
+                                        />
+                                    </div>
+
+                                    {/* Select All Bar */}
+                                    <div className="flex items-center space-x-2 py-2 px-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <Checkbox
+                                            id="select_all"
+                                            checked={selectedAll}
+                                            onCheckedChange={handleSelectAll}
+                                            disabled={processing || filteredPermissions.length === 0}
+                                            className="border-slate-300 data-[state=checked]:bg-vismass-blue data-[state=checked]:border-vismass-blue"
+                                        />
+                                        <Label htmlFor="select_all" className="text-xs font-medium text-slate-700 cursor-pointer">
+                                            {t('Select All')} ({filteredPermissions.length} {t('permissions')})
+                                        </Label>
+                                    </div>
+
+                                    {/* Permissions List */}
+                                    <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                                        {filteredPermissions.length > 0 ? (
+                                            filteredPermissions.map((permission) => (
+                                                <div
+                                                    key={permission.id}
+                                                    onClick={() => handlePermissionToggle(permission.id)}
+                                                    className={`flex items-start space-x-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                                                        data.permissions.includes(permission.id)
+                                                            ? 'border-vismass-blue/40 bg-blue-50/40 shadow-xs'
+                                                            : 'border-slate-200 bg-white hover:bg-slate-50'
+                                                    }`}
+                                                >
+                                                    <Checkbox
+                                                        id={`permission_${permission.id}`}
+                                                        checked={data.permissions.includes(permission.id)}
+                                                        onCheckedChange={() => handlePermissionToggle(permission.id)}
+                                                        className="mt-0.5 border-slate-300 data-[state=checked]:bg-vismass-blue data-[state=checked]:border-vismass-blue"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs font-semibold text-slate-900">
+                                                                {permission.name}
+                                                            </span>
+                                                            <span className="font-mono text-xs text-slate-500">
+                                                                {permission.slug}
+                                                            </span>
+                                                        </div>
+                                                        {permission.description && (
+                                                            <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                                                {permission.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-8 text-slate-500">
+                                                <Key className="mx-auto mb-2 h-8 w-8 text-slate-300" />
+                                                <p className="text-xs">{t('No permissions match your search')}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Submit Buttons */}
+                            <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                                <Link
+                                    href={route('roles.index')}
+                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                >
+                                    {t('Cancel')}
+                                </Link>
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !data.name || !data.slug}
+                                    className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium"
+                                >
+                                    {processing ? (
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            <span>{t('Creating Role...')}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center space-x-2">
+                                            <Plus className="w-5 h-5" />
+                                            <span>{t('Create Role')}</span>
+                                        </div>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Roles Management')} • v1.0.0</p>
                     </div>
                 </main>
-
-                {/* Footer */}
-                <footer className="mt-12 border-t border-sky-200 bg-gradient-to-r from-white to-sky-50">
-                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-                            <p className="text-xs text-gray-600">© UNITEC POS System • Role Management</p>
-                            <p className="text-xs text-gray-500">v1.0.0 • Professional Access Control</p>
-                        </div>
-                    </div>
-                </footer>
             </div>
         </AppLayout>
     );

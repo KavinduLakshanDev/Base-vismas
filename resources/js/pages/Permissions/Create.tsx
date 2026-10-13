@@ -1,13 +1,16 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-declare function route(name: string, params?: any): string;
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Shield, AlertTriangle } from 'lucide-react';
+import InputError from '@/components/input-error';
+import { ArrowLeft, Plus, Shield, Key, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { t } from '@/lib/i18n';
+
+declare function route(name: string, params?: any): string;
 
 interface FormData {
     name: string;
@@ -29,20 +32,20 @@ export default function Create() {
                 reset();
                 toast.success('Permission created successfully');
             },
-            onError: (errors) => {
-                const errorMessages = Object.values(errors).flat();
-                errorMessages.forEach(message => {
+            onError: (errs) => {
+                const errorMessages = Object.values(errs).flat();
+                errorMessages.forEach((message) => {
                     toast.error(message as string);
                 });
-            }
+            },
         });
     };
 
     const generateSlug = (name: string) => {
         return name
             .toLowerCase()
-            .replace(/[^a-z0-9\s]/g, '')
-            .replace(/\s+/g, '_')
+            .replace(/[^a-z0-9\s._-]/g, '')
+            .replace(/\s+/g, '.')
             .trim();
     };
 
@@ -50,7 +53,7 @@ export default function Create() {
         const name = e.target.value;
         setData('name', name);
 
-        // Auto-generate slug
+        // Auto-generate slug if empty or following pattern
         if (!data.slug || data.slug === generateSlug(data.name)) {
             setData('slug', generateSlug(name));
         }
@@ -58,181 +61,172 @@ export default function Create() {
 
     return (
         <AppLayout>
-            <Head title="Create Permission" />
+            <Head title={t('Create Permission')} />
 
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
+            <div className="min-h-screen bg-slate-50">
                 {/* Header */}
-                <header className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 shadow-lg">
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between py-6">
                             <div className="flex items-center space-x-4">
-                                <div className="rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 p-3 shadow-lg">
-                                    <Shield className="h-7 w-7 text-white" />
+                                <Link
+                                    href={route('permissions.index')}
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Plus className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold text-white">
-                                        Create Permission
+                                        {t('Create Permission')}
                                     </h1>
-                                    <p className="text-sm text-sky-200">
-                                        Add a new permission to the system
+                                    <p className="text-sm text-white/80">
+                                        {t('Add a new permission to the access control system')}
                                     </p>
                                 </div>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <Link
-                                    href={route('permissions.index')}
-                                    className="inline-flex items-center rounded bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/20"
-                                >
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Back to Permissions
-                                </Link>
                             </div>
                         </div>
                     </div>
                 </header>
 
+                {/* Main Content */}
                 <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {t('Create Permission')}
+                        </h1>
+                        <p className="text-slate-600 text-lg">
+                            {t('Define specific capability keys that can be assigned to roles and users')}
+                        </p>
+                    </div>
 
-                        {/* Form */}
-                        <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50 shadow-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 px-6 py-4">
-                                <div className="flex items-center space-x-3">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 p-2 shadow">
-                                        <Shield className="h-5 w-5 text-white" />
+                    {/* Form Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Basic Information */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-6">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <Shield className="w-5 h-5 text-vismass-blue" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-white">
-                                        Permission Details
-                                    </h3>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Permission Details')}
+                                    </h2>
                                 </div>
-                            </div>
 
-                            <div className="p-6">
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    {/* Name */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">
-                                            Permission Name <span className="text-destructive">*</span>
+                                        <Label htmlFor="name" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Shield className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Permission Name')} *
                                         </Label>
                                         <Input
                                             id="name"
-                                            type="text"
                                             value={data.name}
                                             onChange={handleNameChange}
-                                            placeholder="e.g., View Users"
-                                            disabled={processing}
-                                            className={errors.name ? 'border-destructive' : ''}
+                                            required
+                                            className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                            placeholder="e.g., Create Invoices, View Sales Reports"
                                         />
-                                        {errors.name && (
-                                            <p className="text-sm text-destructive">{errors.name}</p>
-                                        )}
-                                        <p className="text-sm text-muted-foreground">
-                                            A human-readable name for the permission
+                                        <InputError message={errors.name} />
+                                        <p className="text-xs text-slate-500">
+                                            {t('A human-readable title describing the permission.')}
                                         </p>
                                     </div>
 
-                                    {/* Slug */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="slug">
-                                            Permission Slug
+                                        <Label htmlFor="slug" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Key className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Permission Slug')} *
                                         </Label>
                                         <Input
                                             id="slug"
-                                            type="text"
                                             value={data.slug}
                                             onChange={(e) => setData('slug', e.target.value)}
-                                            placeholder="e.g., view_users"
-                                            disabled={processing}
-                                            className={errors.slug ? 'border-destructive' : ''}
+                                            required
+                                            className="font-mono border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                            placeholder="e.g., invoices.create, reports.view"
                                         />
-                                        {errors.slug && (
-                                            <p className="text-sm text-destructive">{errors.slug}</p>
-                                        )}
-                                        <p className="text-sm text-muted-foreground">
-                                            A unique identifier for the permission (auto-generated from name)
+                                        <InputError message={errors.slug} />
+                                        <p className="text-xs text-slate-500">
+                                            {t('Unique programmatic identifier used in policies and middleware.')}
                                         </p>
                                     </div>
 
-                                    {/* Description */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="description">
-                                            Description
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="description" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <FileText className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Description')}
                                         </Label>
                                         <Textarea
                                             id="description"
                                             value={data.description}
                                             onChange={(e) => setData('description', e.target.value)}
-                                            placeholder="e.g., Allows user to view the list of all users in the system"
                                             rows={3}
-                                            disabled={processing}
-                                            className={errors.description ? 'border-destructive' : ''}
+                                            className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                            placeholder="Describe what this permission authorizes a user to do..."
                                         />
-                                        {errors.description && (
-                                            <p className="text-sm text-destructive">{errors.description}</p>
-                                        )}
-                                        <p className="text-sm text-muted-foreground">
-                                            Optional description explaining what this permission allows
-                                        </p>
+                                        <InputError message={errors.description} />
                                     </div>
-
-                                    {/* Actions */}
-                                    <div className="flex gap-3 pt-4">
-                                        <Button
-                                            type="submit"
-                                            disabled={processing}
-                                            className="min-w-[120px]"
-                                        >
-                                            {processing ? (
-                                                <>
-                                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                                    Creating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Save className="mr-2 h-4 w-4" />
-                                                    Create Permission
-                                                </>
-                                            )}
-                                        </Button>
-                                        <Link href={route('permissions.index')}>
-                                            <Button variant="outline" disabled={processing}>
-                                                Cancel
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        {/* Help Card */}
-                        <div className="mt-6 rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50 shadow-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 px-6 py-4">
-                                <div className="flex items-center space-x-3">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 p-2 shadow">
-                                        <AlertTriangle className="h-5 w-5 text-white" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-white">
-                                        Important Notes
-                                    </h3>
                                 </div>
+
+                                {data.slug && (
+                                    <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
+                                        <h4 className="mb-2 text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                            {t('Permission Preview')}
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+                                            <div>
+                                                <span className="font-medium text-slate-600">{t('Slug Code')}:</span>
+                                                <span className="ml-2 font-mono font-semibold text-vismass-blue">
+                                                    {data.slug}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium text-slate-600">{t('Middleware Check')}:</span>
+                                                <span className="ml-2 font-mono text-xs text-slate-700">
+                                                    can:{data.slug}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="p-6 space-y-3">
-                                <div>
-                                    <h4 className="font-medium mb-1">Permission Slugs</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        Permission slugs should be unique and follow a consistent naming convention.
-                                        They are used in code to check permissions.
-                                    </p>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium mb-1">Role Assignment</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        After creating this permission, you can assign it to roles in the role management section.
-                                    </p>
-                                </div>
+                            {/* Action Buttons */}
+                            <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                                <Link
+                                    href={route('permissions.index')}
+                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                >
+                                    {t('Cancel')}
+                                </Link>
+                                <Button
+                                    type="submit"
+                                    disabled={processing || !data.name || !data.slug}
+                                    className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium"
+                                >
+                                    {processing ? (
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            <span>{t('Creating Permission...')}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center space-x-2">
+                                            <Plus className="w-5 h-5" />
+                                            <span>{t('Create Permission')}</span>
+                                        </div>
+                                    )}
+                                </Button>
                             </div>
-                        </div>
+                        </form>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Permissions Management')} • v1.0.0</p>
                     </div>
                 </main>
             </div>

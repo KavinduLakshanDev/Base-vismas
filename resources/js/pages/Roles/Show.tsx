@@ -1,21 +1,21 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-
-// Declare route function (available globally via Ziggy)
-declare function route(name: string, params?: any): string;
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from '@/components/ui/table';
-import { ArrowLeft, Edit, Shield, Building, Users, Key, User as UserIcon, CheckCircle, TrendingUp, Database } from 'lucide-react';
+    ArrowLeft,
+    Edit2,
+    Shield,
+    Building,
+    Building2,
+    Users,
+    Key,
+    Code,
+    Calendar,
+    FileText,
+} from 'lucide-react';
+import { t } from '@/lib/i18n';
+
+declare function route(name: string, params?: any): string;
 
 interface Permission {
     id: number;
@@ -59,417 +59,294 @@ interface Props {
 }
 
 export default function Show({ role }: Props) {
-    const getLevelBadgeVariant = (level: string) => {
-        switch (level) {
-            case 'super_admin':
-                return 'destructive';
-            case 'company_admin':
-                return 'default';
-            case 'branch_admin':
-                return 'secondary';
-            case 'user':
-                return 'outline';
-            default:
-                return 'outline';
-        }
-    };
-
     const formatLevel = (level: string) => {
-        return level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return level.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     };
 
-    const getLevelIcon = (level: string) => {
+    const getLevelBadgeClass = (level: string) => {
         switch (level) {
             case 'super_admin':
-                return <Shield className="h-5 w-5" />;
+                return 'bg-purple-100 text-purple-800 border-purple-200';
             case 'company_admin':
-                return <Building className="h-5 w-5" />;
+                return 'bg-blue-100 text-blue-800 border-blue-200';
             case 'branch_admin':
-                return <Users className="h-5 w-5" />;
-            case 'user':
-                return <UserIcon className="h-5 w-5" />;
+                return 'bg-emerald-100 text-emerald-800 border-emerald-200';
             default:
-                return <UserIcon className="h-5 w-5" />;
+                return 'bg-slate-100 text-slate-800 border-slate-200';
         }
     };
 
     return (
         <AppLayout>
-            <Head title={`Role: ${role.name}`} />
+            <Head title={`${t('Role')}: ${role.name}`} />
 
-            {/* Enhanced Layout Structure */}
-            <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-blue-50">
-                {/* Header Section */}
-                <div className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 shadow-lg">
-                    <div className="mx-auto max-w-7xl px-6 py-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                {/* Back Button */}
-                                <button
-                                    onClick={() => window.history.back()}
-                                    className="mr-2 rounded-lg bg-white/20 backdrop-blur-sm p-2 hover:bg-white/30 transition-all duration-200 border border-white/30"
-                                    title="Go Back"
+            <div className="min-h-screen bg-slate-50">
+                {/* Header */}
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between py-6">
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    href={route('roles.index')}
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
                                 >
-                                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                    </svg>
-                                </button>
-                                <div className="rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 p-3 shadow-lg">
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
                                     <Shield className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold text-white">
-                                        Role Details
+                                        {t('Role Details')}
                                     </h1>
-                                    <p className="text-sm text-sky-200">
-                                        View role information, permissions, and assigned users
+                                    <p className="text-sm text-white/80">
+                                        {t('Details for')} {role.name}
                                     </p>
                                 </div>
                             </div>
-                            <div className="rounded-xl bg-white/10 px-4 py-2 backdrop-blur-sm">
-                                <span className="text-sm text-white font-medium">
-                                    {new Date().toLocaleDateString('en-GB', {
-                                        weekday: 'long',
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })}
-                                </span>
-                            </div>
                         </div>
                     </div>
-                </div>
+                </header>
 
                 {/* Main Content */}
-                <div className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0">
-                        {/* Stats Cards */}
-                        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Key className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Total Permissions</p>
-                                        <p className="text-2xl font-bold text-gray-900">{role.permissions.length}</p>
-                                    </div>
+                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {role.name}
+                        </h1>
+                        <p className="text-slate-600 text-lg">
+                            {t('Review access tier, capabilities, and assigned team members')}
+                        </p>
+                    </div>
+
+                    {/* Card Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 space-y-8">
+                        {/* Basic Information */}
+                        <div className="space-y-6">
+                            <div className="flex items-center space-x-3 mb-6">
+                                <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                    <Shield className="w-5 h-5 text-vismass-blue" />
                                 </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
+                                <h2 className="text-xl font-semibold text-slate-800">
+                                    {t('Role Information')}
+                                </h2>
                             </div>
 
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Users className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Assigned Users</p>
-                                        <p className="text-2xl font-bold text-gray-900">{role.users.length}</p>
-                                    </div>
-                                </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
-
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <TrendingUp className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">Access Level</p>
-                                        <p className="text-2xl font-bold text-gray-900">{formatLevel(role.level)}</p>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Shield className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Role Name')}
+                                    </label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm font-semibold text-slate-900">{role.name}</p>
                                     </div>
                                 </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
 
-                            <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-sky-50 p-6 shadow-md transition-all duration-300 hover:shadow-xl border border-sky-100">
-                                <div className="flex items-center">
-                                    <div className="rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 p-3 shadow">
-                                        <Database className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="ml-4">
-                                        <p className="text-sm font-medium text-gray-600">System Role</p>
-                                        <p className="text-2xl font-bold text-gray-900">{role.is_system_role ? 'Yes' : 'No'}</p>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Key className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Role Slug')}
+                                    </label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <span className="font-mono text-sm font-semibold text-vismass-blue">
+                                            {role.slug}
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-sky-200/20"></div>
-                            </div>
-                        </div>
 
-                        {/* Main Content Card */}
-                        <div className="rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50 shadow-lg overflow-hidden">
-                            <div className="bg-gradient-to-r from-sky-900 via-sky-800 to-blue-900 px-6 py-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-white">
-                                            Role Information System
-                                        </h3>
-                                        <p className="text-sky-200 text-sm mt-1">
-                                            Comprehensive role details and management
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Building className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Access Level')}
+                                    </label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center">
+                                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getLevelBadgeClass(role.level)}`}>
+                                            {formatLevel(role.level)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Building2 className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Scope & Type')}
+                                    </label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-slate-800">
+                                            {role.company ? role.company.name : t('System Wide')}
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                            role.is_system_role ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                                        }`}>
+                                            {role.is_system_role ? t('System') : t('Custom')}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <FileText className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Description')}
+                                    </label>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm text-slate-700">
+                                            {role.description || (
+                                                <span className="text-slate-400 italic">{t('No description provided')}</span>
+                                            )}
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Link
-                                            href={route('roles.edit', role.id)}
-                                            className="inline-flex items-center rounded-xl bg-white/20 backdrop-blur-sm px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 hover:shadow-lg border border-white/30"
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Permissions Section */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <Key className="w-5 h-5 text-vismass-blue" />
+                                    </div>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Assigned Permissions')} ({role.permissions.length})
+                                    </h2>
+                                </div>
+                                <Link
+                                    href={route('roles.edit', role.id)}
+                                    className="text-xs font-medium text-vismass-blue hover:underline"
+                                >
+                                    {t('Modify Permissions')}
+                                </Link>
+                            </div>
+
+                            {role.permissions.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {role.permissions.map((permission) => (
+                                        <div
+                                            key={permission.id}
+                                            className="p-3 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50 transition-colors"
                                         >
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            Edit Role
-                                        </Link>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-xs font-semibold text-slate-900">
+                                                    {permission.name}
+                                                </span>
+                                                <span className="font-mono text-xs text-vismass-blue bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                                    {permission.slug}
+                                                </span>
+                                            </div>
+                                            {permission.description && (
+                                                <p className="text-xs text-slate-500 line-clamp-1">
+                                                    {permission.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center text-slate-500">
+                                    <p className="text-xs">{t('No permissions assigned to this role.')}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Assigned Users Section */}
+                        {role.users && role.users.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-3">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <Users className="w-5 h-5 text-vismass-blue" />
                                     </div>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Assigned Users')} ({role.users.length})
+                                    </h2>
+                                </div>
+
+                                <div className="overflow-hidden rounded-xl border border-slate-200">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gradient-to-r from-sky-50 to-blue-50">
+                                            <tr>
+                                                <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                    {t('Username')}
+                                                </th>
+                                                <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                    {t('Full Name')}
+                                                </th>
+                                                <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                    {t('Email')}
+                                                </th>
+                                                <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                    {t('Status')}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {role.users.map((user) => (
+                                                <tr key={user.id} className="hover:bg-sky-50/50">
+                                                    <td className="px-4 py-2.5 whitespace-nowrap text-xs font-semibold text-slate-900">
+                                                        {user.username}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 whitespace-nowrap text-xs text-slate-800">
+                                                        {user.first_name} {user.last_name}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 whitespace-nowrap text-xs text-slate-600">
+                                                        {user.email}
+                                                    </td>
+                                                    <td className="px-4 py-2.5 whitespace-nowrap text-xs">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                                            user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {user.is_active ? t('Active') : t('Inactive')}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
+                        )}
 
-                            {/* Content Area */}
-                            <div className="p-6">
-                                {/* Role Details */}
-                                <div className="mb-8 rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-blue-50 p-6">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-3">
-                                            {getLevelIcon(role.level)}
-                                            <div>
-                                                <h2 className="text-2xl font-bold text-gray-900">{role.name}</h2>
-                                                <p className="text-gray-600 mt-1">
-                                                    {role.description || 'No description provided'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Badge variant={getLevelBadgeVariant(role.level)} className="text-sm px-3 py-1">
-                                                {formatLevel(role.level)}
-                                            </Badge>
-                                            {role.is_system_role && (
-                                                <Badge variant="destructive" className="text-sm px-3 py-1">System Role</Badge>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Role ID</h4>
-                                            <p className="text-lg font-semibold text-gray-900">{role.id}</p>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Slug</h4>
-                                            <p className="text-lg font-semibold font-mono text-gray-900">{role.slug}</p>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Access Level</h4>
-                                            <Badge variant={getLevelBadgeVariant(role.level)} className="text-sm">
-                                                {formatLevel(role.level)}
-                                            </Badge>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Scope</h4>
-                                            {role.company ? (
-                                                <div>
-                                                    <p className="text-lg font-semibold text-gray-900">{role.company.name}</p>
-                                                    {role.section && (
-                                                        <p className="text-sm text-gray-600">{role.section.name}</p>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <Badge variant="outline" className="text-sm">System Wide</Badge>
-                                            )}
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Created</h4>
-                                            <p className="text-lg font-semibold text-gray-900">{new Date(role.created_at).toLocaleDateString('en-GB')}</p>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sm text-sky-900 mb-2">Last Updated</h4>
-                                            <p className="text-lg font-semibold text-gray-900">{new Date(role.updated_at).toLocaleDateString('en-GB')}</p>
-                                        </div>
-                                    </div>
+                        {/* Integration & Usage Tips */}
+                        <div className="rounded-xl bg-slate-50 p-6 border border-slate-200">
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 flex items-center">
+                                <Code className="w-4 h-4 mr-2 text-vismass-blue" />
+                                {t('Framework Usage')}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                                    <span className="text-slate-500 block mb-1 font-sans">{t('PHP Role Check')}:</span>
+                                    <span className="text-vismass-blue font-semibold">{`$user->hasRole('${role.slug}')`}</span>
                                 </div>
-
-                                {/* Permissions Section */}
-                                <div className="mb-8 rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden">
-                                    <div className="bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Key className="h-6 w-6 text-white" />
-                                                <div>
-                                                    <h3 className="text-lg font-semibold text-white">Assigned Permissions</h3>
-                                                    <p className="text-sky-200 text-sm">All permissions granted to this role</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                                                {role.permissions.length} permission{role.permissions.length !== 1 ? 's' : ''}
-                                            </Badge>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-6">
-                                        {role.permissions.length > 0 ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {role.permissions.map((permission) => (
-                                                    <div key={permission.id} className="p-4 border border-sky-100 rounded-lg bg-gradient-to-r from-sky-50 to-blue-50 hover:from-sky-100 hover:to-blue-100 transition-all duration-200">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <h4 className="font-semibold text-gray-900">{permission.name}</h4>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {permission.slug}
-                                                            </Badge>
-                                                        </div>
-                                                        {permission.description && (
-                                                            <p className="text-sm text-gray-600">
-                                                                {permission.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <Key className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-30" />
-                                                <h3 className="text-lg font-semibold text-gray-500 mb-2">
-                                                    No permissions assigned
-                                                </h3>
-                                                <p className="text-sm text-gray-400 mb-6">
-                                                    This role has no permissions assigned
-                                                </p>
-                                                <Link
-                                                    href={route('roles.edit', role.id)}
-                                                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-200 hover:from-sky-700 hover:to-blue-700 transition-all duration-200"
-                                                >
-                                                    <Edit className="h-5 w-5" />
-                                                    Add Permissions
-                                                </Link>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Assigned Users Section */}
-                                <div className="rounded-xl border border-gray-300 bg-white shadow-sm overflow-hidden">
-                                    <div className="bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Users className="h-6 w-6 text-white" />
-                                                <div>
-                                                    <h3 className="text-lg font-semibold text-white">Assigned Users</h3>
-                                                    <p className="text-sky-200 text-sm">Users who have this role assigned</p>
-                                                </div>
-                                            </div>
-                                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                                                {role.users.length} user{role.users.length !== 1 ? 's' : ''}
-                                            </Badge>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-6">
-                                        {role.users.length > 0 ? (
-                                            <div className="max-h-[400px] overflow-y-auto">
-                                                <table className="w-full text-sm">
-                                                    <thead className="bg-gradient-to-r from-sky-600 to-blue-600 text-white sticky top-0">
-                                                        <tr>
-                                                            <th className="px-4 py-3 text-left font-bold">Username</th>
-                                                            <th className="px-4 py-3 text-left font-bold">Full Name</th>
-                                                            <th className="px-4 py-3 text-left font-bold">Email</th>
-                                                            <th className="px-4 py-3 text-left font-bold">Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-200">
-                                                        {role.users.map((user) => (
-                                                            <tr
-                                                                key={user.id}
-                                                                className="transition-colors hover:bg-gradient-to-r from-sky-50 to-blue-50 group"
-                                                            >
-                                                                <td className="px-4 py-3 font-medium text-gray-900">
-                                                                    {user.username}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-gray-900">
-                                                                    {user.first_name} {user.last_name}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-gray-600">
-                                                                    {user.email}
-                                                                </td>
-                                                                <td className="px-4 py-3">
-                                                                    <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ${
-                                                                        user.is_active
-                                                                            ? 'bg-gradient-to-r from-green-100 to-emerald-200 text-green-800 border border-green-200'
-                                                                            : 'bg-gradient-to-r from-red-100 to-pink-200 text-red-800 border border-red-200'
-                                                                    }`}>
-                                                                        {user.is_active ? 'Active' : 'Inactive'}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-12">
-                                                <Users className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-30" />
-                                                <h3 className="text-lg font-semibold text-gray-500 mb-2">
-                                                    No users assigned
-                                                </h3>
-                                                <p className="text-sm text-gray-400 mb-6">
-                                                    No users are assigned to this role
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Users can be assigned this role when creating or editing user accounts
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Usage Information */}
-                                <div className="mt-8 rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-blue-50 p-6">
-                                    <h3 className="text-lg font-semibold text-sky-900 mb-4">Usage Information</h3>
-                                    <div className="space-y-4">
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sky-900 mb-2">Code Usage</h4>
-                                            <p className="text-sm text-gray-600 mb-2">
-                                                To check if a user has this role:
-                                            </p>
-                                            <code className="block px-3 py-2 bg-gray-100 rounded text-sm font-mono text-gray-800">
-                                                {`$user->hasRole('${role.slug}')`}
-                                            </code>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sky-900 mb-2">Middleware Usage</h4>
-                                            <p className="text-sm text-gray-600 mb-2">
-                                                To protect routes with this role:
-                                            </p>
-                                            <code className="block px-3 py-2 bg-gray-100 rounded text-sm font-mono text-gray-800">
-                                                {`Route::middleware('role:${role.slug}')`}
-                                            </code>
-                                        </div>
-                                        <div className="bg-white rounded-lg p-4 border border-sky-100">
-                                            <h4 className="font-medium text-sky-900 mb-2">Impact Summary</h4>
-                                            <p className="text-sm text-gray-600">
-                                                This role has {role.permissions.length} permission{role.permissions.length !== 1 ? 's' : ''} 
-                                                and is assigned to {role.users.length} user{role.users.length !== 1 ? 's' : ''}.
-                                            </p>
-                                        </div>
-                                        {role.is_system_role && (
-                                            <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg p-4 border border-red-200">
-                                                <h4 className="font-medium text-red-900 mb-2">System Role</h4>
-                                                <p className="text-sm text-red-700">
-                                                    This is a system role that cannot be deleted. It's essential for proper system operation.
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
+                                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                                    <span className="text-slate-500 block mb-1 font-sans">{t('Route Middleware')}:</span>
+                                    <span className="text-vismass-blue font-semibold">{`middleware('role:${role.slug}')`}</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Footer */}
-                <footer className="mt-12 border-t border-sky-200 bg-gradient-to-r from-white to-sky-50">
-                    <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-                            <p className="text-xs text-gray-600">© UNITEC POS System • Role Details</p>
-                            <p className="text-xs text-gray-500">v1.0.0 • Professional POS Solution</p>
+                        {/* Action Buttons */}
+                        <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                            <Link
+                                href={route('roles.index')}
+                                className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                            >
+                                {t('Back to List')}
+                            </Link>
+                            <Link
+                                href={route('roles.edit', role.id)}
+                                className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center space-x-2"
+                            >
+                                <Edit2 className="w-4 h-4" />
+                                <span>{t('Edit Role')}</span>
+                            </Link>
                         </div>
                     </div>
-                </footer>
+
+                    {/* Footer */}
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Roles Management')} • v1.0.0</p>
+                    </div>
+                </main>
             </div>
         </AppLayout>
     );
