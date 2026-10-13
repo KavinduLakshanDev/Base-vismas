@@ -41,11 +41,7 @@ class VatRateController extends Controller
         $vatRates->transform(function ($rate) use ($today, &$foundActive) {
             $isActive = false;
             
-            // We are iterating DESC by effective_date (newest first)
-            // The active rate is the first one where:
-            // 1. We haven't found an active one yet
-            // 2. effective_date is in the past or today
-            // 3. end_date is null OR end_date is in the future or today
+           
             if (!$foundActive) {
                  if ($rate->effective_date <= $today && ($rate->end_date === null || $rate->end_date >= $today)) {
                      $isActive = true;

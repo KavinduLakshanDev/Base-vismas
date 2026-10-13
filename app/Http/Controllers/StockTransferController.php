@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Section;
-use App\Models\Product;
+use App\Models\ItemMaster;
 use App\Models\StockTransfer;
 use App\Models\Company;
 use Illuminate\Http\Request;

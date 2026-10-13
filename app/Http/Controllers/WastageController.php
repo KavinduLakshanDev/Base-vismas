@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Models\ItemMaster;
 use App\Models\Wastage;
-use App\Models\PurchaseDet;
 use App\Models\StockInHand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,7 +53,7 @@ class WastageController extends Controller
     public function create()
     {
         // Get products from itemmaster table with pricing details
-        $products = Product::select([
+        $products = ItemMaster::select([
             'ItmKy as id',
             'ItmNm as name',
             'ItemCode as code',
@@ -134,144 +133,103 @@ class WastageController extends Controller
             'section_id' => 'required|exists:sections,id',
         ]);
 
-        // Check if this is an orphaned purchase item (format: PD_123)
-        $isOrphanedPurchase = is_string($validated['product_id']) && str_starts_with($validated['product_id'], 'PD_');
+        // Product from itemmaster
+        $productId = (int) $validated['product_id'];
         
-        if ($isOrphanedPurchase) {
-            // Extract purchase detail ID
-            $purchaseDetId = (int) str_replace('PD_', '', $validated['product_id']);
-            $purchaseDet = PurchaseDet::find($purchaseDetId);
-            
-            if (!$purchaseDet) {
-                return back()->withErrors(['product_id' => 'Invalid purchase detail reference.']);
-            }
+        // Verify product exists
+        $product = ItemMaster::where('ItmKy', $productId)->first();
+        if (!$product) {
+            return back()->withErrors(['product_id' => 'The selected product is invalid.']);
+        }
 
-            // Create wastage record with purchase detail info
-            Wastage::create([
-                'product_id' => null, // No product link
-                'category' => $purchaseDet->item_name ?? 'N/A',
-                'quantity' => $validated['quantity'],
-                'unit' => 'Unit',
-                'reason' => $validated['reason'],
-                'wastage_date' => $validated['wastage_date'],
-                'notes' => ($validated['notes'] ?? '') . ' [Purchase Detail: ' . $purchaseDet->item_name . ', Serial: ' . $purchaseDet->serial_number . ']',
-                'status' => $validated['status'],
-                'recorded_by' => Auth::id(),
-                'section_id' => $validated['section_id'],
-            ]);
-        } else {
-            // Normal product from itemmaster
-            $productId = (int) $validated['product_id'];
-            
-            // Verify product exists
-            $product = Product::where('ItmKy', $productId)->first();
-            if (!$product) {
-                return back()->withErrors(['product_id' => 'The selected product is invalid.']);
-            }
-
-            // Find specific stock record if serial number or batch number is provided
-            $stockInHandId = null;
-            $purchaseDetId = null;
-            
-            if (!empty($validated['serial_number']) || !empty($validated['batch_no'])) {
-                $stockQuery = StockInHand::where('ItemKy', $productId)
-                    ->where('Qty', '>', 0);
-                
-                if (!empty($validated['serial_number'])) {
-                    $stockQuery->where('serial_number', $validated['serial_number']);
-                }
-                if (!empty($validated['batch_no'])) {
-                    $stockQuery->where('batch_no', $validated['batch_no']);
-                }
-                
-                $specificStock = $stockQuery->first();
-                if ($specificStock) {
-                    $stockInHandId = $specificStock->TableKy;
-                }
-                
-                // Try to find the purchase detail record for reference
-                $purchaseDetQuery = PurchaseDet::where('iTimKy', $productId);
-                if (!empty($validated['serial_number'])) {
-                    $purchaseDetQuery->where('serial_number', $validated['serial_number']);
-                }
-                if (!empty($validated['batch_no'])) {
-                    $purchaseDetQuery->where('batch_no', $validated['batch_no']);
-                }
-                $purchaseDet = $purchaseDetQuery->first();
-                if ($purchaseDet) {
-                    $purchaseDetId = $purchaseDet->PerchaseDetKy;
-                }
-            }
-
-            // Get section_code from section_id
-            $section = \App\Models\Section::find($validated['section_id']);
-            if (!$section) {
-                return back()->withErrors(['section_id' => 'Invalid section selected.']);
-            }
-            $sectionCode = $section->section_code;
-
-            // Validate available stock before creating wastage
-            $availableStockQuery = StockInHand::where('ItemKy', $productId)
-                ->where('section_code', $sectionCode);
+        // Find specific stock record if serial number or batch number is provided
+        $stockInHandId = null;
+        
+        if (!empty($validated['serial_number']) || !empty($validated['batch_no'])) {
+            $stockQuery = StockInHand::where('ItemKy', $productId)
+                ->where('Qty', '>', 0);
             
             if (!empty($validated['serial_number'])) {
-                $availableStockQuery->where('serial_number', $validated['serial_number']);
+                $stockQuery->where('serial_number', $validated['serial_number']);
             }
             if (!empty($validated['batch_no'])) {
-                $availableStockQuery->where('batch_no', $validated['batch_no']);
+                $stockQuery->where('batch_no', $validated['batch_no']);
             }
             
-            // Calculate available stock including free quantity
-            $availableStock = $availableStockQuery
-                ->selectRaw('SUM(Qty + COALESCE(FreeQty, 0)) as total')
-                ->value('total') ?? 0;
-            
-            if ($validated['quantity'] > $availableStock) {
-                $errorMsg = 'Insufficient stock. Available: ' . $availableStock;
-                if (!empty($validated['batch_no']) || !empty($validated['serial_number'])) {
-                    $errorMsg .= ' for the selected batch/serial';
-                }
-                return back()->withErrors(['quantity' => $errorMsg])->withInput();
+            $specificStock = $stockQuery->first();
+            if ($specificStock) {
+                $stockInHandId = $specificStock->TableKy;
             }
-
-            // Create wastage record
-            $wastage = Wastage::create([
-                'product_id' => $productId,
-                'category' => $product->catkey ?? 'N/A',
-                'quantity' => $validated['quantity'],
-                'unit' => $product->UnitKy ?? 'Unit',
-                'serial_number' => $validated['serial_number'] ?? null,
-                'batch_no' => $validated['batch_no'] ?? null,
-                'warranty' => $validated['warranty'] ?? null,
-                'purchase_det_id' => $purchaseDetId,
-                'stock_in_hand_id' => $stockInHandId,
-                'reason' => $validated['reason'],
-                'wastage_date' => $validated['wastage_date'],
-                'notes' => $validated['notes'],
-                'status' => $validated['status'],
-                'recorded_by' => Auth::id(),
-                'section_id' => $validated['section_id'],
-            ]);
-
-            // Deduct from stock immediately (status is 'pending' by default)
-            Log::info("Deducting stock for wastage", [
-                'product_id' => $productId,
-                'quantity' => $validated['quantity'],
-                'serial_number' => $validated['serial_number'] ?? null,
-                'batch_no' => $validated['batch_no'] ?? null,
-                'stock_in_hand_id' => $stockInHandId,
-                'section_code' => $sectionCode
-            ]);
-            
-            $this->deductStock(
-                $productId, 
-                $validated['quantity'], 
-                $sectionCode,
-                $validated['serial_number'] ?? null,
-                $validated['batch_no'] ?? null,
-                $stockInHandId
-            );
         }
+
+        // Get section_code from section_id
+        $section = \App\Models\Section::find($validated['section_id']);
+        if (!$section) {
+            return back()->withErrors(['section_id' => 'Invalid section selected.']);
+        }
+        $sectionCode = $section->section_code;
+
+        // Validate available stock before creating wastage
+        $availableStockQuery = StockInHand::where('ItemKy', $productId)
+            ->where('section_code', $sectionCode);
+        
+        if (!empty($validated['serial_number'])) {
+            $availableStockQuery->where('serial_number', $validated['serial_number']);
+        }
+        if (!empty($validated['batch_no'])) {
+            $availableStockQuery->where('batch_no', $validated['batch_no']);
+        }
+        
+        // Calculate available stock including free quantity
+        $availableStock = $availableStockQuery
+            ->selectRaw('SUM(Qty + COALESCE(FreeQty, 0)) as total')
+            ->value('total') ?? 0;
+        
+        if ($validated['quantity'] > $availableStock) {
+            $errorMsg = 'Insufficient stock. Available: ' . $availableStock;
+            if (!empty($validated['batch_no']) || !empty($validated['serial_number'])) {
+                $errorMsg .= ' for the selected batch/serial';
+            }
+            return back()->withErrors(['quantity' => $errorMsg])->withInput();
+        }
+
+        // Create wastage record
+        $wastage = Wastage::create([
+            'product_id' => $productId,
+            'category' => $product->catkey ?? 'N/A',
+            'quantity' => $validated['quantity'],
+            'unit' => $product->UnitKy ?? 'Unit',
+            'serial_number' => $validated['serial_number'] ?? null,
+            'batch_no' => $validated['batch_no'] ?? null,
+            'warranty' => $validated['warranty'] ?? null,
+            'purchase_det_id' => null,
+            'stock_in_hand_id' => $stockInHandId,
+            'reason' => $validated['reason'],
+            'wastage_date' => $validated['wastage_date'],
+            'notes' => $validated['notes'],
+            'status' => $validated['status'],
+            'recorded_by' => Auth::id(),
+            'section_id' => $validated['section_id'],
+        ]);
+
+        // Deduct from stock immediately (status is 'pending' by default)
+        Log::info("Deducting stock for wastage", [
+            'product_id' => $productId,
+            'quantity' => $validated['quantity'],
+            'serial_number' => $validated['serial_number'] ?? null,
+            'batch_no' => $validated['batch_no'] ?? null,
+            'stock_in_hand_id' => $stockInHandId,
+            'section_code' => $sectionCode
+        ]);
+        
+        $this->deductStock(
+            $productId, 
+            $validated['quantity'], 
+            $sectionCode,
+            $validated['serial_number'] ?? null,
+            $validated['batch_no'] ?? null,
+            $stockInHandId
+        );
 
         return redirect()->route('wastages.index')
             ->with('success', 'Wastage record created successfully.');
@@ -312,145 +270,101 @@ class WastageController extends Controller
         try {
             foreach ($validated['items'] as $index => $item) {
                 try {
-                    // Check if this is an orphaned purchase item (format: PD_123)
-                    $isOrphanedPurchase = is_string($item['product_id']) && str_starts_with($item['product_id'], 'PD_');
+                    // Product from itemmaster
+                    $productId = (int) $item['product_id'];
                     
-                    if ($isOrphanedPurchase) {
-                        // Extract purchase detail ID
-                        $purchaseDetId = (int) str_replace('PD_', '', $item['product_id']);
-                        $purchaseDet = PurchaseDet::find($purchaseDetId);
-                        
-                        if (!$purchaseDet) {
-                            $errors[] = "Item " . ($index + 1) . ": Invalid purchase detail reference.";
-                            continue;
-                        }
+                    // Verify product exists
+                    $product = ItemMaster::where('ItmKy', $productId)->first();
+                    if (!$product) {
+                        $errors[] = "Item " . ($index + 1) . ": Invalid product.";
+                        continue;
+                    }
 
-                        // Create wastage record with purchase detail info
-                        Wastage::create([
-                            'product_id' => null,
-                            'category' => $purchaseDet->item_name ?? 'N/A',
-                            'quantity' => $item['quantity'],
-                            'unit' => 'Unit',
-                            'cost_price' => $item['cost_price'],
-                            'reason' => $item['reason'],
-                            'wastage_date' => $validated['wastage_date'],
-                            'notes' => '[Purchase Detail: ' . $purchaseDet->item_name . ', Serial: ' . $purchaseDet->serial_number . ']',
-                            'status' => $validated['status'],
-                            'recorded_by' => Auth::id(),
-                            'section_id' => $validated['section_id'],
-                        ]);
-                        $createdCount++;
-                    } else {
-                        // Normal product from itemmaster
-                        $productId = (int) $item['product_id'];
-                        
-                        // Verify product exists
-                        $product = Product::where('ItmKy', $productId)->first();
-                        if (!$product) {
-                            $errors[] = "Item " . ($index + 1) . ": Invalid product.";
-                            continue;
-                        }
-
-                        // Find specific stock record if serial number or batch number is provided
-                        $stockInHandId = null;
-                        $purchaseDetId = null;
-                        
-                        if (!empty($item['serial_number']) || !empty($item['batch_no'])) {
-                            $stockQuery = StockInHand::where('ItemKy', $productId)
-                                ->where('Qty', '>', 0);
-                            
-                            if (!empty($item['serial_number'])) {
-                                $stockQuery->where('serial_number', $item['serial_number']);
-                            }
-                            if (!empty($item['batch_no'])) {
-                                $stockQuery->where('batch_no', $item['batch_no']);
-                            }
-                            
-                            $specificStock = $stockQuery->first();
-                            if ($specificStock) {
-                                $stockInHandId = $specificStock->TableKy;
-                            }
-                            
-                            // Try to find the purchase detail record for reference
-                            $purchaseDetQuery = PurchaseDet::where('iTimKy', $productId);
-                            if (!empty($item['serial_number'])) {
-                                $purchaseDetQuery->where('serial_number', $item['serial_number']);
-                            }
-                            if (!empty($item['batch_no'])) {
-                                $purchaseDetQuery->where('batch_no', $item['batch_no']);
-                            }
-                            $purchaseDet = $purchaseDetQuery->first();
-                            if ($purchaseDet) {
-                                $purchaseDetId = $purchaseDet->PerchaseDetKy;
-                            }
-                        }
-
-                        // Validate available stock before creating wastage
-                        $availableStockQuery = StockInHand::where('ItemKy', $productId)
-                            ->where('section_code', $sectionCode);
+                    // Find specific stock record if serial number or batch number is provided
+                    $stockInHandId = null;
+                    
+                    if (!empty($item['serial_number']) || !empty($item['batch_no'])) {
+                        $stockQuery = StockInHand::where('ItemKy', $productId)
+                            ->where('Qty', '>', 0);
                         
                         if (!empty($item['serial_number'])) {
-                            $availableStockQuery->where('serial_number', $item['serial_number']);
+                            $stockQuery->where('serial_number', $item['serial_number']);
                         }
                         if (!empty($item['batch_no'])) {
-                            $availableStockQuery->where('batch_no', $item['batch_no']);
+                            $stockQuery->where('batch_no', $item['batch_no']);
                         }
                         
-                        // Calculate available stock including free quantity
-                        $availableStock = $availableStockQuery
-                            ->selectRaw('SUM(Qty + COALESCE(FreeQty, 0)) as total')
-                            ->value('total') ?? 0;
-                        
-                        if ($item['quantity'] > $availableStock) {
-                            $errorMsg = "Item " . ($index + 1) . ": Insufficient stock. Available: " . $availableStock;
-                            if (!empty($item['batch_no']) || !empty($item['serial_number'])) {
-                                $errorMsg .= ' for the selected batch/serial';
-                            }
-                            $errors[] = $errorMsg;
-                            continue;
+                        $specificStock = $stockQuery->first();
+                        if ($specificStock) {
+                            $stockInHandId = $specificStock->TableKy;
                         }
-
-                        // Create wastage record
-                        $wastage = Wastage::create([
-                            'product_id' => $productId,
-                            'category' => $product->catkey ?? 'N/A',
-                            'quantity' => $item['quantity'],
-                            'unit' => $product->UnitKy ?? 'Unit',
-                            'cost_price' => $item['cost_price'],
-                            'serial_number' => $item['serial_number'] ?? null,
-                            'batch_no' => $item['batch_no'] ?? null,
-                            'warranty' => $item['warranty'] ?? null,
-                            'purchase_det_id' => $purchaseDetId,
-                            'stock_in_hand_id' => $stockInHandId,
-                            'reason' => $item['reason'],
-                            'wastage_date' => $validated['wastage_date'],
-                            'notes' => null,
-                            'status' => $validated['status'],
-                            'recorded_by' => Auth::id(),
-                            'section_id' => $validated['section_id'],
-                        ]);
-
-                        // Deduct from stock immediately (status is 'pending' by default)
-                        Log::info("Deducting stock for multi-item wastage", [
-                            'product_id' => $productId,
-                            'quantity' => $item['quantity'],
-                            'serial_number' => $item['serial_number'] ?? null,
-                            'batch_no' => $item['batch_no'] ?? null,
-                            'stock_in_hand_id' => $stockInHandId,
-                            'section_code' => $sectionCode
-                        ]);
-                        
-                        $this->deductStock(
-                            $productId, 
-                            $item['quantity'], 
-                            $sectionCode,
-                            $item['serial_number'] ?? null,
-                            $item['batch_no'] ?? null,
-                            $stockInHandId
-                        );
-                        
-                        $createdCount++;
                     }
+
+                    // Validate available stock before creating wastage
+                    $availableStockQuery = StockInHand::where('ItemKy', $productId)
+                        ->where('section_code', $sectionCode);
+                    
+                    if (!empty($item['serial_number'])) {
+                        $availableStockQuery->where('serial_number', $item['serial_number']);
+                    }
+                    if (!empty($item['batch_no'])) {
+                        $availableStockQuery->where('batch_no', $item['batch_no']);
+                    }
+                    
+                    // Calculate available stock including free quantity
+                    $availableStock = $availableStockQuery
+                        ->selectRaw('SUM(Qty + COALESCE(FreeQty, 0)) as total')
+                        ->value('total') ?? 0;
+                    
+                    if ($item['quantity'] > $availableStock) {
+                        $errorMsg = "Item " . ($index + 1) . ": Insufficient stock. Available: " . $availableStock;
+                        if (!empty($item['batch_no']) || !empty($item['serial_number'])) {
+                            $errorMsg .= ' for the selected batch/serial';
+                        }
+                        $errors[] = $errorMsg;
+                        continue;
+                    }
+
+                    // Create wastage record
+                    $wastage = Wastage::create([
+                        'product_id' => $productId,
+                        'category' => $product->catkey ?? 'N/A',
+                        'quantity' => $item['quantity'],
+                        'unit' => $product->UnitKy ?? 'Unit',
+                        'cost_price' => $item['cost_price'],
+                        'serial_number' => $item['serial_number'] ?? null,
+                        'batch_no' => $item['batch_no'] ?? null,
+                        'warranty' => $item['warranty'] ?? null,
+                        'purchase_det_id' => null,
+                        'stock_in_hand_id' => $stockInHandId,
+                        'reason' => $item['reason'],
+                        'wastage_date' => $validated['wastage_date'],
+                        'notes' => null,
+                        'status' => $validated['status'],
+                        'recorded_by' => Auth::id(),
+                        'section_id' => $validated['section_id'],
+                    ]);
+
+                    // Deduct from stock immediately (status is 'pending' by default)
+                    Log::info("Deducting stock for multi-item wastage", [
+                        'product_id' => $productId,
+                        'quantity' => $item['quantity'],
+                        'serial_number' => $item['serial_number'] ?? null,
+                        'batch_no' => $item['batch_no'] ?? null,
+                        'stock_in_hand_id' => $stockInHandId,
+                        'section_code' => $sectionCode
+                    ]);
+                    
+                    $this->deductStock(
+                        $productId, 
+                        $item['quantity'], 
+                        $sectionCode,
+                        $item['serial_number'] ?? null,
+                        $item['batch_no'] ?? null,
+                        $stockInHandId
+                    );
+                    
+                    $createdCount++;
                 } catch (\Exception $e) {
                     $errors[] = "Item " . ($index + 1) . ": " . $e->getMessage();
                     Log::error("Error creating wastage for item", [
@@ -511,7 +425,7 @@ class WastageController extends Controller
     {
         $wastage = Wastage::findOrFail($id);
         
-        $products = Product::select([
+        $products = ItemMaster::select([
             'ItmKy as id',
             'ItmNm as name',
             'catkey as category',
@@ -570,7 +484,7 @@ class WastageController extends Controller
         ]);
 
         // Get product details
-        $product = Product::where('ItmKy', $validated['product_id'])->first();
+        $product = ItemMaster::where('ItmKy', $validated['product_id'])->first();
 
         // Get section_code from section_id
         $section = \App\Models\Section::find($validated['section_id']);
@@ -754,111 +668,35 @@ class WastageController extends Controller
 
         $results = collect();
 
-        // First, try to find purchase details with valid product links
-        $purchaseDetailsWithProducts = PurchaseDet::where('serial_number', 'LIKE', "%{$serialNumber}%")
-            ->where(function($query) {
-                $query->where('Status', 'A')
-                      ->orWhereNull('Status');
-            })
-            ->where('iTimKy', '!=', 0)
-            ->whereNotNull('iTimKy')
-            ->with(['product' => function ($query) {
-                $query->select('ItmKy', 'ItmNm', 'ItemCode', 'BarCode', 'catkey', 'UnitKy', 'CosPri', 'SlsPri', 'WholePrice');
-            }])
+        $stockItems = StockInHand::where('serial_number', 'LIKE', "%{$serialNumber}%")
+            ->where('Qty', '>', 0)
             ->limit(20)
             ->get();
 
-        foreach ($purchaseDetailsWithProducts as $purchaseDet) {
-            if ($purchaseDet->product && $purchaseDet->iTimKy) {
-                $product = $purchaseDet->product;
-                
+        foreach ($stockItems as $stock) {
+            $product = ItemMaster::find($stock->ItemKy);
+            if ($product) {
                 $latestPrice = DB::table('item_price_det')
                     ->where('ItmKy', $product->ItmKy)
                     ->where('Status', 'A')
                     ->orderBy('ChangedDate', 'desc')
                     ->first();
 
-                // Note: stock_quantity removed - use batch-specific quantities via getProductBatches() API
-
                 $results->push([
                     'id' => $product->ItmKy,
-                    'name' => $product->ItmNm ?? $purchaseDet->item_name ?? 'Unknown Product',
+                    'name' => $product->ItmNm ?? 'Unknown Product',
                     'code' => $product->ItemCode ?? '',
-                    'barcode' => $product->BarCode ?? $purchaseDet->barcode ?? '',
+                    'barcode' => $product->BarCode ?? '',
                     'category' => $product->catkey ?? 'N/A',
                     'unit' => $product->UnitKy ?? 'Unit',
-                    'cost_price' => $latestPrice->NCostPrice ?? $product->CosPri ?? $purchaseDet->NewCostPrice ?? 0,
-                    'sale_price' => $latestPrice->SlsPri ?? $product->SlsPri ?? $purchaseDet->SalePrice ?? 0,
-                    'wholesale_price' => $latestPrice->WholePrice ?? $product->WholePrice ?? $purchaseDet->WholePrice ?? 0,
-                    'purchase_price' => $latestPrice->CosPri ?? $purchaseDet->CostPrice ?? $product->CosPri ?? 0,
-                    'serial_number' => $purchaseDet->serial_number,
-                    'batch_no' => $purchaseDet->batch_no,
-                    'warranty' => $purchaseDet->warranty,
+                    'cost_price' => $latestPrice->NCostPrice ?? $product->CosPri ?? 0,
+                    'sale_price' => $latestPrice->SlsPri ?? $product->SlsPri ?? 0,
+                    'wholesale_price' => $latestPrice->WholePrice ?? $product->WholePrice ?? 0,
+                    'purchase_price' => $latestPrice->CosPri ?? $product->CosPri ?? 0,
+                    'serial_number' => $stock->serial_number,
+                    'batch_no' => $stock->batch_no,
+                    'warranty' => $stock->warranty,
                 ]);
-            }
-        }
-
-        // If no results, search purchase details without product requirement
-        // and try to match by product name or create a searchable entry
-        if ($results->isEmpty()) {
-            $orphanedPurchases = PurchaseDet::where('serial_number', 'LIKE', "%{$serialNumber}%")
-                ->whereNotNull('item_name')
-                ->where('item_name', '!=', '')
-                ->limit(20)
-                ->get();
-            
-            foreach ($orphanedPurchases as $orphanedPurchase) {
-                // Try to find matching product by name
-                $matchingProduct = Product::where('ItmNm', 'LIKE', "%{$orphanedPurchase->item_name}%")
-                    ->where('Status', 'A')
-                    ->first();
-                
-                if ($matchingProduct) {
-                    $latestPrice = DB::table('item_price_det')
-                        ->where('ItmKy', $matchingProduct->ItmKy)
-                        ->where('Status', 'A')
-                        ->orderBy('ChangedDate', 'desc')
-                        ->first();
-                    
-                    // Note: stock_quantity removed - use batch-specific quantities via getProductBatches() API
-                    
-                    $results->push([
-                        'id' => $matchingProduct->ItmKy,
-                        'name' => $matchingProduct->ItmNm . ' (matched)',
-                        'code' => $matchingProduct->ItemCode ?? '',
-                        'barcode' => $matchingProduct->BarCode ?? $orphanedPurchase->barcode ?? '',
-                        'category' => $matchingProduct->catkey ?? 'N/A',
-                        'unit' => $matchingProduct->UnitKy ?? 'Unit',
-                        'cost_price' => $latestPrice->NCostPrice ?? $matchingProduct->CosPri ?? $orphanedPurchase->NewCostPrice ?? 0,
-                        'sale_price' => $latestPrice->SlsPri ?? $matchingProduct->SlsPri ?? $orphanedPurchase->SalePrice ?? 0,
-                        'wholesale_price' => $latestPrice->WholePrice ?? $matchingProduct->WholePrice ?? $orphanedPurchase->WholePrice ?? 0,
-                        'purchase_price' => $latestPrice->CosPri ?? $orphanedPurchase->CostPrice ?? $matchingProduct->CosPri ?? 0,
-                        'serial_number' => $orphanedPurchase->serial_number,
-                        'batch_no' => $orphanedPurchase->batch_no,
-                        'warranty' => $orphanedPurchase->warranty,
-                        'type' => 'product',
-                    ]);
-                } else {
-                    // If no product match found, show purchase detail info anyway
-                    // Use a special ID format to identify these
-                    $results->push([
-                        'id' => 'PD_' . $orphanedPurchase->PerchaseDetKy,
-                        'name' => $orphanedPurchase->item_name . ' (from purchase)',
-                        'code' => '',
-                        'barcode' => $orphanedPurchase->barcode ?? '',
-                        'category' => 'N/A',
-                        'unit' => 'Unit',
-                        'cost_price' => $orphanedPurchase->NewCostPrice ?? $orphanedPurchase->CostPrice ?? 0,
-                        'sale_price' => $orphanedPurchase->SalePrice ?? 0,
-                        'wholesale_price' => $orphanedPurchase->WholePrice ?? 0,
-                        'purchase_price' => $orphanedPurchase->CostPrice ?? 0,
-                        'serial_number' => $orphanedPurchase->serial_number,
-                        'batch_no' => $orphanedPurchase->batch_no,
-                        'warranty' => $orphanedPurchase->warranty,
-                        'is_orphaned' => true,
-                        'type' => 'product',
-                    ]);
-                }
             }
         }
 
@@ -877,7 +715,7 @@ class WastageController extends Controller
         }
 
         // Search for products by name, code, barcode
-        $products = Product::select([
+        $products = ItemMaster::select([
             'ItmKy as id', 'ItmNm as name', 'ItemCode as code', 'BarCode as barcode',
             'catkey as category', 'UnitKy as unit', 'CosPri as cost_price',
             'SlsPri as sale_price', 'WholePrice as wholesale_price',
@@ -896,8 +734,6 @@ class WastageController extends Controller
                 ->where('Status', 'A')
                 ->orderBy('ChangedDate', 'desc')
                 ->first();
-
-            // Note: stock_quantity removed - use batch-specific quantities via getProductBatches() API
 
             return [
                 'id' => $item->id,
@@ -927,92 +763,39 @@ class WastageController extends Controller
     {
         $results = collect();
 
-        // 1. Search linked purchases
-        $purchaseDetailsWithProducts = PurchaseDet::where('serial_number', 'LIKE', "%{$serialNumber}%")
-            ->where(function($query) {
-                $query->where('Status', 'A')->orWhereNull('Status');
-            })
-            ->where('iTimKy', '!=', 0)->whereNotNull('iTimKy')
-            ->with(['product' => fn($q) => $q->select('ItmKy', 'ItmNm', 'ItemCode', 'BarCode', 'catkey', 'UnitKy', 'CosPri', 'SlsPri', 'WholePrice')])
-            ->limit(10)->get();
+        $stockItems = StockInHand::where('serial_number', 'LIKE', "%{$serialNumber}%")
+            ->where('Qty', '>', 0)
+            ->limit(10)
+            ->get();
 
-        foreach ($purchaseDetailsWithProducts as $purchaseDet) {
-            if ($purchaseDet->product) {
-                $product = $purchaseDet->product;
+        foreach ($stockItems as $stock) {
+            $product = ItemMaster::find($stock->ItemKy);
+            if ($product) {
                 $latestPrice = DB::table('item_price_det')
-                ->where('ItmKy', $product->ItmKy)->where('Status', 'A')->orderBy('ChangedDate', 'desc')->first();
-                
-                // Note: stock_quantity removed - use batch-specific quantities via getProductBatches() API
-                
+                    ->where('ItmKy', $product->ItmKy)
+                    ->where('Status', 'A')
+                    ->orderBy('ChangedDate', 'desc')
+                    ->first();
+
                 $results->push([
                     'id' => $product->ItmKy,
                     'name' => $product->ItmNm,
                     'code' => $product->ItemCode ?? '',
-                    'barcode' => $product->BarCode ?? $purchaseDet->barcode ?? '',
+                    'barcode' => $product->BarCode ?? '',
                     'category' => $product->catkey ?? 'N/A',
                     'unit' => $product->UnitKy ?? 'Unit',
-                    'cost_price' => $latestPrice->NCostPrice ?? $product->CosPri ?? $purchaseDet->NewCostPrice ?? 0,
-                    'sale_price' => $latestPrice->SlsPri ?? $product->SlsPri ?? $purchaseDet->SalePrice ?? 0,
-                    'wholesale_price' => $latestPrice->WholePrice ?? $product->WholePrice ?? $purchaseDet->WholePrice ?? 0,
-                    'purchase_price' => $latestPrice->CosPri ?? $purchaseDet->CostPrice ?? $product->CosPri ?? 0,
-                    'serial_number' => $purchaseDet->serial_number,
-                    'batch_no' => $purchaseDet->batch_no,
-                    'warranty' => $purchaseDet->warranty,
+                    'cost_price' => $latestPrice->NCostPrice ?? $product->CosPri ?? 0,
+                    'sale_price' => $latestPrice->SlsPri ?? $product->SlsPri ?? 0,
+                    'wholesale_price' => $latestPrice->WholePrice ?? $product->WholePrice ?? 0,
+                    'purchase_price' => $latestPrice->CosPri ?? $product->CosPri ?? 0,
+                    'serial_number' => $stock->serial_number,
+                    'batch_no' => $stock->batch_no,
+                    'warranty' => $stock->warranty,
                     'type' => 'serial',
                 ]);
             }
         }
 
-        // 2. Search orphaned purchases
-        if ($results->isEmpty()) {
-            $orphanedPurchases = PurchaseDet::where('serial_number', 'LIKE', "%{$serialNumber}%")
-                ->whereNotNull('item_name')->where('item_name', '!=', '')
-                ->limit(10)->get();
-            
-            foreach ($orphanedPurchases as $orphanedPurchase) {
-                $matchingProduct = Product::where('ItmNm', 'LIKE', "%{$orphanedPurchase->item_name}%")->where('Status', 'A')->first();
-                if ($matchingProduct) {
-                    $latestPrice = DB::table('item_price_det')->where('ItmKy', $matchingProduct->ItmKy)->where('Status', 'A')->orderBy('ChangedDate', 'desc')->first();
-                    
-                    // Note: stock_quantity removed - use batch-specific quantities via getProductBatches() API
-                    
-                    $results->push([
-                        'id' => $matchingProduct->ItmKy,
-                        'name' => $matchingProduct->ItmNm . ' (matched)',
-                        'code' => $matchingProduct->ItemCode ?? '',
-                        'barcode' => $matchingProduct->BarCode ?? $orphanedPurchase->barcode ?? '',
-                        'category' => $matchingProduct->catkey ?? 'N/A',
-                        'unit' => $matchingProduct->UnitKy ?? 'Unit',
-                        'cost_price' => $latestPrice->NCostPrice ?? $matchingProduct->CosPri ?? $orphanedPurchase->NewCostPrice ?? 0,
-                        'sale_price' => $latestPrice->SlsPri ?? $matchingProduct->SlsPri ?? $orphanedPurchase->SalePrice ?? 0,
-                        'wholesale_price' => $latestPrice->WholePrice ?? $matchingProduct->WholePrice ?? $orphanedPurchase->WholePrice ?? 0,
-                        'purchase_price' => $latestPrice->CosPri ?? $orphanedPurchase->CostPrice ?? $matchingProduct->CosPri ?? 0,
-                        'serial_number' => $orphanedPurchase->serial_number,
-                        'batch_no' => $orphanedPurchase->batch_no,
-                        'warranty' => $orphanedPurchase->warranty,
-                        'type' => 'serial',
-                    ]);
-                } else {
-                    $results->push([
-                        'id' => 'PD_' . $orphanedPurchase->PerchaseDetKy,
-                        'name' => $orphanedPurchase->item_name . ' (from purchase)',
-                        'code' => '',
-                        'barcode' => $orphanedPurchase->barcode ?? '',
-                        'category' => 'N/A',
-                        'unit' => 'Unit',
-                        'cost_price' => $orphanedPurchase->NewCostPrice ?? $orphanedPurchase->CostPrice ?? 0,
-                        'sale_price' => $orphanedPurchase->SalePrice ?? 0,
-                        'wholesale_price' => $orphanedPurchase->WholePrice ?? 0,
-                        'purchase_price' => $orphanedPurchase->CostPrice ?? 0,
-                        'serial_number' => $orphanedPurchase->serial_number,
-                        'batch_no' => $orphanedPurchase->batch_no,
-                        'warranty' => $orphanedPurchase->warranty,
-                        'is_orphaned' => true,
-                        'type' => 'serial',
-                    ]);
-                }
-            }
-        }
         return $results;
     }
 

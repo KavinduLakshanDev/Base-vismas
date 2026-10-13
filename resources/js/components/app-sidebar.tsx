@@ -67,84 +67,14 @@ const companyNavItems: RoleNavItem[] = [
 ];
 
 // Section 2: Products & Sales
-const productsNavItems: RoleNavItem[] = [
-    {
-        title: 'Categories',
-        href: '/pos/categories',
-        icon: Package,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Brands',
-        href: '/pos/brands',
-        icon: Tag,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Models',
-        href: '/pos/models',
-        icon: Tag,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Units',
-        href: '/pos/units',
-        icon: Ruler,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Products',
-        href: '/pos/products',
-        icon: Box,
-        roles: ['company_admin', 'technician', 'cashier'], // View products
-    },
-    {
-        title: 'Purchases',
-        href: '/pos/purchases',
-        icon: ShoppingCart,
-        roles: ['company_admin'],
-    },
+const productsNavItems: RoleNavItem[] = [];
 
-    {
-        title: 'Stock In Hand Report',
-        href: '/reports/stock-in-hand',
-        icon: FileText,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Printer Stock In Hand Report',
-        href: '/reports/printer-stock',
-        icon: PrinterIcon,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Printer Stock Bin Card',
-        href: '/reports/printer-stock-bin-card',
-        icon: PrinterIcon,
-        roles: ['company_admin', 'cashier'],
-    },
-
-    {
-        title: 'Sales',
-        href: '/sales',
-        icon: Receipt,
-        roles: ['company_admin', 'cashier'],
-    },
-];
-
-// Section 3: Printer & Stock Transfer
+// Section 3: Stock & Wastage Transfer
 const printerStockNavItems: RoleNavItem[] = [
-
     {
         title: 'Stock Transfer',
         href: '/stock-transfers',
         icon: ArrowRightLeft,
-        roles: ['company_admin'],
-    },
-    {
-        title: 'Printer Transfer',
-        href: '/printer-transfers',
-        icon: PrinterIcon,
         roles: ['company_admin'],
     },
     {
@@ -153,19 +83,6 @@ const printerStockNavItems: RoleNavItem[] = [
         icon: AlertTriangle,
         roles: ['company_admin'],
     },
-    {
-        title: 'Printer Wastage',
-        href: '/printer-wastages',
-        icon: PrinterIcon,
-        roles: ['company_admin'],
-    },
-    {
-        title: 'Printing Section Products',
-        href: '/pos/printing-section-products',
-        icon: PrinterIcon,
-        roles: ['company_admin', 'cashier'],
-    },
-
 ];
 
 // Section 4: Payments
@@ -183,53 +100,20 @@ const paymentsNavItems: RoleNavItem[] = [
         roles: ['company_admin'],
     },
     {
-
-        
-
         title: 'Supplier Returns',
         href: '/supplier-returns',
         icon: AlertTriangle,
         roles: ['company_admin'],
     },
-    {title: 'Bank Accounts',
+    {
+        title: 'Bank Accounts',
         href: '/admin/bank-accounts',
-        icon: Building2,},
-    
-{
-        title: 'Cheque Return',
-        href: '/pos/cheque-return',
-        icon: RefreshCw,
-        roles: ['company_admin', 'cashier'],
+        icon: Building2,
     },
 ];
 
 // Section 5: Service Jobs
-const servicesNavItems: RoleNavItem[] = [
-    {
-        title: 'Service Jobs',
-        href: '/service-jobs',
-        icon: Wrench,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Create Service Job',
-        href: '/service-jobs/create',
-        icon: Plus,
-        roles: ['company_admin', 'cashier'], // Technicians usually work on jobs, admins create? Or techs create too? Seeder permission says technicians can view/edit. Maybe create?
-    },
-    {
-        title: 'Quotations',
-        href: '/quotations',
-        icon: ScrollText,
-        roles: ['company_admin', 'cashier', 'technician'], // Cashiers handle billing
-    },
-    {
-        title: 'Job History',
-        href: '/service-jobs/history',
-        icon: History,
-        roles: ['company_admin', 'cashier', 'technician'],
-    },
-];
+const servicesNavItems: RoleNavItem[] = [];
 
 // Section 6: Reports
 const reportsNavItems: RoleNavItem[] = [
@@ -264,28 +148,10 @@ const reportsNavItems: RoleNavItem[] = [
         roles: ['company_admin', 'technician', 'cashier'],
     },
     {
-        title: 'Printer Stock Bin Card',
-        href: '/reports/printer-stock-bin-card',
-        icon: PrinterIcon,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
         title: 'Wastage Report',
         href: '/reports/wastage',
         icon: Trash2,
         roles: ['company_admin', 'cashier', 'technician'],
-    },
-    {
-        title: 'Purchase Orders',
-        href: '/reports/purchase-orders',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Sales Report',
-        href: '/reports/sales',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
     },
     {
         title: 'Stock Bin Card',
@@ -302,12 +168,6 @@ const reportsNavItems: RoleNavItem[] = [
     {
         title: 'Item List Report',
         href: '/reports/item-list',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Sale Items Report',
-        href: '/reports/sale-items',
         icon: FileText,
         roles: ['company_admin', 'cashier'],
     },

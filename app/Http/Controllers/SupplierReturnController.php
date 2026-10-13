@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SupplierReturn;
 use App\Models\Section;
 use App\Models\Address;
-use App\Models\Product;
-use App\Models\PurchaseDet;
+use App\Models\ItemMaster;
 use App\Models\StockInHand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,12 +26,9 @@ class SupplierReturnController extends Controller
                 $itemName = 'N/A';
                 $itemCode = '';
                 
-                if ($return->return_type === 'item' && $return->item) {
+                if ($return->item) {
                     $itemName = $return->item->ItmNm;
                     $itemCode = $return->item->ItemCode;
-                } elseif ($return->return_type === 'printer' && $return->purchaseDet) {
-                    $itemName = $return->purchaseDet->item_name;
-                    $itemCode = $return->serial_number;
                 }
 
                 return [
@@ -141,20 +137,10 @@ class SupplierReturnController extends Controller
             ->groupBy('ItemKy', DB::raw('COALESCE(batch_no, "N/A")'))
             ->havingRaw('SUM(Qty + COALESCE(FreeQty, 0)) > 0');
 
-        // Get distinct items purchased from this supplier
-        $supplierItemsSubquery = DB::table('purchase_det as pd')
-            ->join('purchase as p', 'pd.PurchaseKey', '=', 'p.PurchaseKey')
-            ->where('p.SuppCode', $supplier->AdrCd)
-            ->select('pd.iTimKy')
-            ->distinct();
-
-        // Join with itemmaster to get item details, filtered by supplier's items
+        // Join with itemmaster to get item details
         $query = DB::table('itemmaster as im')
             ->joinSub($stockSubquery, 'stock', function($join) {
                 $join->on('im.ItmKy', '=', 'stock.ItemKy');
-            })
-            ->joinSub($supplierItemsSubquery, 'supplier_items', function($join) {
-                $join->on('im.ItmKy', '=', 'supplier_items.iTimKy');
             });
 
         // Only add search filter if term is provided
@@ -183,79 +169,11 @@ class SupplierReturnController extends Controller
     }
 
     /**
-     * Search for printers from purchase_det by supplier.
+     * Search for printers (deprecated - printers removed).
      */
     public function searchPrinters(Request $request)
     {
-        $term = $request->get('term', '');
-        $supplierId = $request->get('supplier_id');
-        $sectionId = $request->get('section_id');
-
-        if (!$supplierId || !$sectionId) {
-            return response()->json([]);
-        }
-
-        // Get supplier code from Address table
-        $supplier = Address::where('AdrKy', $supplierId)->first();
-        if (!$supplier) {
-            return response()->json([]);
-        }
-
-        $section = Section::findOrFail($sectionId);
-
-        // First, calculate stock quantities per item and batch
-        $stockSubquery = DB::table('stock_in_hand')
-            ->select(
-                'ItemKy',
-                'batch_no',
-                DB::raw('SUM(Qty + COALESCE(FreeQty, 0)) as stock_quantity')
-            )
-            ->where('section_code', $section->section_code)
-            ->where('company_code', $section->company_code)
-            ->where('OrdDate', '<=', now()->toDateString())
-            ->whereNotNull('batch_no')
-            ->groupBy('ItemKy', 'batch_no')
-            ->havingRaw('SUM(Qty + COALESCE(FreeQty, 0)) > 0');
-
-        // Join with purchase details
-        $query = DB::table('purchase_det as pd')
-            ->join('purchase as p', 'pd.PurchaseKey', '=', 'p.PurchaseKey')
-            ->joinSub($stockSubquery, 'stock', function($join) {
-                $join->on('pd.iTimKy', '=', 'stock.ItemKy')
-                     ->on('pd.batch_no', '=', 'stock.batch_no');
-            })
-            ->whereNotNull('pd.serial_number')
-            ->where('pd.serial_number', '!=', '')
-            ->where('p.SuppCode', $supplier->AdrCd);
-
-        // Only add search filter if term is provided
-        if ($term && strlen($term) > 0) {
-            $query->where(function ($q) use ($term) {
-                $q->where('pd.item_name', 'LIKE', "%{$term}%")
-                  ->orWhere('pd.serial_number', 'LIKE', "%{$term}%")
-                  ->orWhere('pd.brand', 'LIKE', "%{$term}%")
-                  ->orWhere('pd.model', 'LIKE', "%{$term}%");
-            });
-        }
-
-        $printers = $query
-            ->select(
-                'pd.PerchaseDetKy',
-                'pd.iTimKy',
-                'pd.item_name',
-                'pd.serial_number',
-                'pd.batch_no',
-                'pd.brand',
-                'pd.model',
-                'pd.warranty',
-                'pd.CostPrice as CosPri',
-                'stock.stock_quantity'
-            )
-            ->orderBy('pd.item_name')
-            ->limit(50)
-            ->get();
-
-        return response()->json($printers);
+        return response()->json([]);
     }
 
     /**
@@ -266,7 +184,7 @@ class SupplierReturnController extends Controller
         \Log::info('Store method called', ['data' => $request->all()]);
         
         $validated = $request->validate([
-            'return_type' => 'required|in:item,printer',
+            'return_type' => 'required|in:item',
             'items' => 'required|array|min:1',
             'items.*.key' => 'required',
             'items.*.item_master_key' => 'nullable',
@@ -308,18 +226,10 @@ class SupplierReturnController extends Controller
                     'section_id' => $section->id,
                     'company_code' => $section->company_code,
                     'section_code' => $section->section_code,
+                    'item_key' => $item['key'],
+                    'item_master_key' => $item['item_master_key'] ?? null,
+                    'batch_no' => $item['batch_no'] ?? null,
                 ];
-
-                if ($validated['return_type'] === 'item') {
-                    $returnData['item_key'] = $item['key'];
-                    $returnData['item_master_key'] = $item['item_master_key'] ?? null;
-                    $returnData['batch_no'] = $item['batch_no'] ?? null;
-                } else {
-                    $purchaseDet = PurchaseDet::where('PerchaseDetKy', $item['key'])->firstOrFail();
-                    $returnData['purchase_det_key'] = $item['key'];
-                    $returnData['serial_number'] = $purchaseDet->serial_number;
-                    $returnData['batch_no'] = $purchaseDet->batch_no;
-                }
 
                 \Log::info('Return data prepared', ['returnData' => $returnData]);
                 
@@ -351,42 +261,20 @@ class SupplierReturnController extends Controller
      */
     private function deductStock(SupplierReturn $return, Section $section)
     {
-        if ($return->return_type === 'item') {
-            // Deduct item stock
-            StockInHand::create([
-                'RefNo' => 'SRET-OUT-' . $return->id,
-                'Cky' => $section->id,
-                'company_code' => $section->company_code,
-                'section_code' => $section->section_code,
-                'OrdDate' => now()->format('Y-m-d'),
-                'ItemKy' => $return->item_master_key,
-                'Qty' => -$return->quantity,
-                'FreeQty' => 0,
-                'TrnTyp' => 'SRET-OUT',
-                'OrdKy' => $return->id,
-                'batch_no' => $return->batch_no,
-            ]);
-        } else {
-            // Deduct printer stock
-            $purchaseDet = $return->purchaseDet;
-            StockInHand::create([
-                'RefNo' => 'SRET-OUT-' . $return->id,
-                'Cky' => $section->id,
-                'company_code' => $section->company_code,
-                'section_code' => $section->section_code,
-                'OrdDate' => now()->format('Y-m-d'),
-                'ItemKy' => $purchaseDet->iTimKy,
-                'Qty' => -$return->quantity,
-                'FreeQty' => 0,
-                'TrnTyp' => 'SRET-OUT',
-                'OrdKy' => $return->id,
-                'batch_no' => $return->batch_no,
-                'serial_number' => $return->serial_number,
-                'brand' => $purchaseDet->brand,
-                'model' => $purchaseDet->model,
-                'warranty' => $purchaseDet->warranty,
-            ]);
-        }
+        // Deduct item stock
+        StockInHand::create([
+            'RefNo' => 'SRET-OUT-' . $return->id,
+            'Cky' => $section->id,
+            'company_code' => $section->company_code,
+            'section_code' => $section->section_code,
+            'OrdDate' => now()->format('Y-m-d'),
+            'ItemKy' => $return->item_master_key,
+            'Qty' => -$return->quantity,
+            'FreeQty' => 0,
+            'TrnTyp' => 'SRET-OUT',
+            'OrdKy' => $return->id,
+            'batch_no' => $return->batch_no,
+        ]);
     }
 
     /**

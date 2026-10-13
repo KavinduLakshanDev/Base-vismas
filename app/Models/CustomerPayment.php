@@ -13,8 +13,6 @@ class CustomerPayment extends Model
     protected $fillable = [
         'customer_id',
         'customer_code',
-        'service_job_id',
-        'sales_transaction_id',
         'amount',
         'date',
         'method',
@@ -33,15 +31,5 @@ class CustomerPayment extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'AdrKy');
-    }
-
-    public function serviceJob(): BelongsTo
-    {
-        return $this->belongsTo(ServiceJob::class);
-    }
-
-    public function salesTransaction(): BelongsTo
-    {
-        return $this->belongsTo(SalesTransaction::class);
     }
 }

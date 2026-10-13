@@ -13,7 +13,6 @@ use App\Models\Section;
 use App\Models\ItemMaster;
 use App\Models\CodeMaster;
 use App\Models\AccMas;
-use App\Models\PurchaseDet;
 use App\Models\ItemPriceDet;
 
 class ItemListReportController extends Controller

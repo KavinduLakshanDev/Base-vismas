@@ -38,7 +38,7 @@ class Wastage extends Model
      */
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id', 'ItmKy');
+        return $this->belongsTo(ItemMaster::class, 'product_id', 'ItmKy');
     }
 
     /**
@@ -47,14 +47,6 @@ class Wastage extends Model
     public function recordedBy()
     {
         return $this->belongsTo(User::class, 'recorded_by');
-    }
-
-    /**
-     * Get the purchase detail associated with this wastage (for serialized items).
-     */
-    public function purchaseDet()
-    {
-        return $this->belongsTo(PurchaseDet::class, 'purchase_det_id', 'PerchaseDetKy');
     }
 
     /**

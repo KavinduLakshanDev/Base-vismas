@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 
 use App\Models\CustomerPayment;
 use App\Models\Customer;
-use App\Models\ServiceJob;
-use App\Models\SalesTransaction;
 use App\Models\AccMas;
 use App\Models\Address;
 use Inertia\Inertia;
@@ -275,18 +273,7 @@ class CustomerPaymentController extends Controller
         }
 
         try {
-            $customerId = $request->query('customer_id');
-
-            if (!$customerId) {
-                return response()->json([]);
-            }
-
-            $invoices = \App\Models\SalesTransaction::where('customer_id', $customerId)
-                ->where('balance_amount', '>', 0)
-                ->orderBy('transaction_date', 'desc')
-                ->get();
-
-            return response()->json($invoices);
+            return response()->json([]);
         } catch (\Exception $e) {
             Log::error('Error in getPendingInvoices: ' . $e->getMessage());
             return response()->json(['error' => 'Internal server error'], 500);
@@ -298,10 +285,6 @@ class CustomerPaymentController extends Controller
         if (!request()->user()->hasPermission('customer_payments.create')) {
              return redirect()->back()->with('error', 'Unauthorized. You do not have permission to create customer payments.');
         }
-
-        $input = $request->all();
-        $isServiceJobPayment = !empty($input['service_job_id']);
-        $isInvoicePayment = !empty($input['sales_transaction_id']);
 
         $rules = [
             'amount' => 'required|numeric|min:0.01',
@@ -316,17 +299,8 @@ class CustomerPaymentController extends Controller
             'CardAuthCode' => 'nullable|string',
             'Reference' => 'nullable|string',
             'notes' => 'nullable|string',
-            'service_job_id' => 'nullable|exists:service_jobs,id',
-            'sales_transaction_id' => 'nullable|exists:sales_transactions,id',
+            'AccKy' => 'required',
         ];
-
-        if ($isServiceJobPayment) {
-            // Check AccMas if coming from Service Job
-            $rules['AccKy'] = 'required'; // We will validate manually to allow both types
-        } else {
-            // Check Address if coming from standard form
-            $rules['AccKy'] = 'required';
-        }
 
         $validated = $request->validate($rules);
         
@@ -367,8 +341,6 @@ class CustomerPaymentController extends Controller
             $payment = CustomerPayment::create([
                 'customer_id' => $adrKy,
                 'customer_code' => $customerCode,
-                'service_job_id' => $validated['service_job_id'] ?? null,
-                'sales_transaction_id' => $validated['sales_transaction_id'] ?? null,
                 'amount' => $validated['amount'],
                 'date' => $validated['TrnDt'],
                 'method' => $validated['method'],
@@ -382,22 +354,6 @@ class CustomerPaymentController extends Controller
                 'notes' => $validated['notes'] ?? null,
                 'status' => 'completed',
             ]);
-
-            // Auto-reconcile Sales Transaction if linked
-            if (!empty($validated['sales_transaction_id'])) {
-                /** @var SalesTransaction $sale */
-                $sale = SalesTransaction::find($validated['sales_transaction_id']);
-                if ($sale) {
-                    $sale->balance_amount = (float)$sale->balance_amount - (float)$validated['amount'];
-                    if ($sale->balance_amount <= 0) {
-                        $sale->balance_amount = 0;
-                        $sale->status = 'completed';
-                    } else {
-                        $sale->status = 'partially_paid';
-                    }
-                    $sale->save();
-                }
-            }
 
             // Update customer's current balance
             if ($accKy) {
@@ -424,106 +380,7 @@ class CustomerPaymentController extends Controller
                         'section_code' => $customerAcc->section_code ?? null,
                         'customer_code' => $customerCode,
                         'customer_name' => $customerAcc->AccNm ?? null,
-                        'original_payment_id' => $validated['sales_transaction_id'] ?? null,
                     ]);
-                }
-            }
-
-            // Auto-reconcile Service Job if linked
-            if (!empty($validated['service_job_id'])) {
-                /** @var ServiceJob $job */
-                $job = ServiceJob::find($validated['service_job_id']);
-                if ($job) {
-                    $totalPaidThroughPayments = CustomerPayment::where('service_job_id', $job->id)->sum('amount');
-                    $job->paid_amount = $totalPaidThroughPayments;
-                    $job->updateTotals();
-                    
-                    $balance = ($job->total_amount - $job->advanced_payment) - $job->paid_amount;
-                    if ($balance <= 0 && $job->status !== 'completed' && $job->status !== 'delivered') {
-                        $job->status = 'completed';
-                        if (!$job->actual_completion_date) {
-                            $job->actual_completion_date = now();
-                        }
-                        $job->save();
-                    }
-                }
-            } elseif (empty($validated['sales_transaction_id']) && $accKy) {
-                // AUTO-ALLOCATION LOGIC:
-                $remainingAmount = (float)$validated['amount'];
-                
-                $jobs = ServiceJob::where('AccKy', $accKy)
-                    ->where('balance_amount', '>', 0)
-                    ->orderBy('created_at', 'asc')
-                    ->get();
-                    
-                $invoices = SalesTransaction::where('customer_id', $adrKy ?: $accKy)
-                    ->where('balance_amount', '>', 0)
-                    ->orderBy('transaction_date', 'asc')
-                    ->get();
-                    
-                $allItems = collect();
-                
-                foreach ($jobs as $j) {
-                    $allItems->push([
-                        'type' => 'job',
-                        'date' => $j->created_at,
-                        'model' => $j,
-                        'balance' => $j->balance_amount
-                    ]);
-                }
-                
-                foreach ($invoices as $i) {
-                    $allItems->push([
-                        'type' => 'invoice',
-                        'date' => $i->transaction_date,
-                        'model' => $i,
-                        'balance' => $i->balance_amount
-                    ]);
-                }
-                
-                $sortedItems = $allItems->sortBy('date');
-                
-                foreach ($sortedItems as $item) {
-                    if ($remainingAmount <= 0.01) break;
-                    
-                    $payAmount = min($remainingAmount, (float)$item['balance']);
-                    
-                    if ($item['type'] === 'job') {
-                        /** @var ServiceJob $jobModel */
-                        $jobModel = $item['model'];
-                        
-                        // Just update the job, do NOT create another payment record
-                        // The main payment record (created above) covers the total amount
-                        
-                        $totalPaid = CustomerPayment::where('service_job_id', $jobModel->id)->sum('amount');
-                        // Add the current allocation amount to what we consider "paid" for this job
-                        $jobModel->paid_amount = $totalPaid + $payAmount; 
-                        $jobModel->updateTotals();
-                        
-                        if (($jobModel->total_amount - $jobModel->advanced_payment - $jobModel->paid_amount) <= 0) {
-                            if ($jobModel->status !== 'completed' && $jobModel->status !== 'delivered') {
-                                $jobModel->status = 'completed';
-                                $jobModel->save();
-                            }
-                        }
-                        
-                    } else {
-                        /** @var SalesTransaction $invModel */
-                        $invModel = $item['model'];
-                        
-                        $invModel->balance_amount = (float)$invModel->balance_amount - $payAmount;
-                        if ($invModel->balance_amount <= 0) {
-                             $invModel->balance_amount = 0;
-                             $invModel->status = 'completed';
-                        } else {
-                             $invModel->status = 'partially_paid';
-                        }
-                        $invModel->save();
-                        
-                        // Do NOT create another payment record here
-                    }
-                    
-                    $remainingAmount -= $payAmount;
                 }
             }
 

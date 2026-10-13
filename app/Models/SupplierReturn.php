@@ -62,7 +62,7 @@ class SupplierReturn extends Model
      */
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'item_master_key', 'ItmKy');
+        return $this->belongsTo(ItemMaster::class, 'item_master_key', 'ItmKy');
     }
 
     /**
@@ -71,13 +71,5 @@ class SupplierReturn extends Model
     public function itemPriceDet(): BelongsTo
     {
         return $this->belongsTo(ItemPriceDet::class, 'item_key', 'ItemPriceKey');
-    }
-
-    /**
-     * Get the purchase detail (for printer returns).
-     */
-    public function purchaseDet(): BelongsTo
-    {
-        return $this->belongsTo(PurchaseDet::class, 'purchase_det_key', 'PerchaseDetKy');
     }
 }

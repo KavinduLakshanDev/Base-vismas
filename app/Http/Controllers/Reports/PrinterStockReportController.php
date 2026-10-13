@@ -51,11 +51,6 @@ class PrinterStockReportController extends Controller
         // Base query for printer stock
         $query = DB::table('stock_in_hand as sh')
             ->leftJoin('itemmaster as im', 'sh.ItemKy', '=', 'im.ItmKy')
-            ->leftJoin('purchase_det as pd', function($join) {
-                $join->on('sh.batch_no', '=', 'pd.batch_no')
-                     ->on('sh.ItemKy', '=', 'pd.iTimKy')
-                     ->on('sh.serial_number', '=', 'pd.serial_number');
-            })
             ->leftJoin('sections as s', 'sh.section_code', '=', 's.section_code')
             ->select(
                 'sh.brand',
@@ -66,7 +61,7 @@ class PrinterStockReportController extends Controller
                 'sh.section_code',
                 's.name as section_name',
                 'im.ItemCode',
-                DB::raw('COALESCE(pd.item_name, im.ItmNm) as item_name'),
+                DB::raw('COALESCE(im.ItmNm, \'\') as item_name'),
                 DB::raw('SUM(COALESCE(sh.Qty, 0) + COALESCE(sh.FreeQty, 0)) as balance')
             )
             ->where(function($q) {
@@ -82,7 +77,6 @@ class PrinterStockReportController extends Controller
                 'sh.section_code',
                 's.name',
                 'im.ItemCode',
-                'pd.item_name',
                 'im.ItmNm'
             )
             ->having('balance', '>', 0);
@@ -130,11 +124,6 @@ class PrinterStockReportController extends Controller
         
         $query = DB::table('stock_in_hand as sh')
             ->leftJoin('itemmaster as im', 'sh.ItemKy', '=', 'im.ItmKy')
-            ->leftJoin('purchase_det as pd', function($join) {
-                $join->on('sh.batch_no', '=', 'pd.batch_no')
-                     ->on('sh.ItemKy', '=', 'pd.iTimKy')
-                     ->on('sh.serial_number', '=', 'pd.serial_number');
-            })
             ->leftJoin('sections as s', 'sh.section_code', '=', 's.section_code')
             ->select(
                 'sh.brand',
@@ -145,7 +134,7 @@ class PrinterStockReportController extends Controller
                 'sh.section_code',
                 's.name as section_name',
                 'im.ItemCode',
-                DB::raw('COALESCE(pd.item_name, im.ItmNm) as item_name'),
+                DB::raw('COALESCE(im.ItmNm, \'\') as item_name'),
                 DB::raw('SUM(COALESCE(sh.Qty, 0) + COALESCE(sh.FreeQty, 0)) as balance')
             )
             ->where(function($q) {
@@ -161,7 +150,6 @@ class PrinterStockReportController extends Controller
                 'sh.section_code',
                 's.name',
                 'im.ItemCode',
-                'pd.item_name',
                 'im.ItmNm'
             )
             ->having('balance', '>', 0)

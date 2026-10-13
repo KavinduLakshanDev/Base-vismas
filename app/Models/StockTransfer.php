@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Section;
-use App\Models\Product;
+use App\Models\ItemMaster;
 use Illuminate\Support\Facades\DB;
 use App\Models\Sequence;
 use Illuminate\Support\Facades\Auth;
@@ -64,7 +64,7 @@ class StockTransfer extends Model
 
     public function item(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'item_id', 'ItmKy');
+        return $this->belongsTo(ItemMaster::class, 'item_id', 'ItmKy');
     }
 
     // Method to perform the transfer (update stock_in_hand records)
