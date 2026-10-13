@@ -1,0 +1,555 @@
+import { NavFooter } from '@/components/nav-footer';
+import { NavMain } from '@/components/nav-main';
+import { NavUser } from '@/components/nav-user';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarGroup,
+    SidebarGroupLabel,
+} from '@/components/ui/sidebar';
+import { dashboard } from '@/routes';
+import { type NavItem } from '@/types';
+import { Link } from '@inertiajs/react';
+import { BookOpen, Code, Database, File, FileText, Folder, LayoutGrid, Layers, Users, Package, Ruler, Truck, Route, User, Box, Shield, Key, ShoppingCart, Receipt, ArrowRightLeft, Wrench, Printer as PrinterIcon, Plus, History, DollarSign, UserCheck, Gift, ScrollText, Tag, AlertTriangle, Trash2, RefreshCw, Building2 } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { resolveUrl } from '@/lib/utils';
+import AppLogo from './app-logo';
+
+// Helper to check roles for items
+interface RoleNavItem extends NavItem {
+    roles?: string[];
+}
+
+// Section 1: Company & Users
+const companyNavItems: RoleNavItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/company/dashboard',
+        icon: LayoutGrid,
+        roles: ['company_admin', 'section_admin', 'technician', 'cashier'], // Everyone needs dashboard? Or usually admins.
+    },
+    {
+        title: 'Company Profile',
+        href: '/company/profile',
+        icon: BookOpen,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Sections',
+        href: '/sections',
+        icon: Layers,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'User Management',
+        href: '/user-management',
+        icon: Users,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Customers',
+        href: '/admin/customers',
+        icon: User,
+        roles: ['company_admin', 'cashier'], // Cashiers manage customers
+    },
+    {
+        title: 'Suppliers',
+        href: '/suppliers',
+        icon: Truck,
+        roles: ['company_admin'],
+    },
+];
+
+// Section 2: Products & Sales
+const productsNavItems: RoleNavItem[] = [
+    {
+        title: 'Categories',
+        href: '/pos/categories',
+        icon: Package,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Brands',
+        href: '/pos/brands',
+        icon: Tag,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Models',
+        href: '/pos/models',
+        icon: Tag,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Units',
+        href: '/pos/units',
+        icon: Ruler,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Products',
+        href: '/pos/products',
+        icon: Box,
+        roles: ['company_admin', 'technician', 'cashier'], // View products
+    },
+    {
+        title: 'Purchases',
+        href: '/pos/purchases',
+        icon: ShoppingCart,
+        roles: ['company_admin'],
+    },
+
+    {
+        title: 'Stock In Hand Report',
+        href: '/reports/stock-in-hand',
+        icon: FileText,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Printer Stock In Hand Report',
+        href: '/reports/printer-stock',
+        icon: PrinterIcon,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Printer Stock Bin Card',
+        href: '/reports/printer-stock-bin-card',
+        icon: PrinterIcon,
+        roles: ['company_admin', 'cashier'],
+    },
+
+    {
+        title: 'Sales',
+        href: '/sales',
+        icon: Receipt,
+        roles: ['company_admin', 'cashier'],
+    },
+];
+
+// Section 3: Printer & Stock Transfer
+const printerStockNavItems: RoleNavItem[] = [
+
+    {
+        title: 'Stock Transfer',
+        href: '/stock-transfers',
+        icon: ArrowRightLeft,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Printer Transfer',
+        href: '/printer-transfers',
+        icon: PrinterIcon,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Item Wastage',
+        href: '/wastages',
+        icon: AlertTriangle,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Printer Wastage',
+        href: '/printer-wastages',
+        icon: PrinterIcon,
+        roles: ['company_admin'],
+    },
+    {
+        title: 'Printing Section Products',
+        href: '/pos/printing-section-products',
+        icon: PrinterIcon,
+        roles: ['company_admin', 'cashier'],
+    },
+
+];
+
+// Section 4: Payments
+const paymentsNavItems: RoleNavItem[] = [
+    {
+        title: 'Customer Payments',
+        href: '/admin/customer-payments',
+        icon: DollarSign,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Supplier Payments',
+        href: '/admin/supplier-payments',
+        icon: DollarSign,
+        roles: ['company_admin'],
+    },
+    {
+
+        
+
+        title: 'Supplier Returns',
+        href: '/supplier-returns',
+        icon: AlertTriangle,
+        roles: ['company_admin'],
+    },
+    {title: 'Bank Accounts',
+        href: '/admin/bank-accounts',
+        icon: Building2,},
+    
+{
+        title: 'Cheque Return',
+        href: '/pos/cheque-return',
+        icon: RefreshCw,
+        roles: ['company_admin', 'cashier'],
+    },
+];
+
+// Section 5: Service Jobs
+const servicesNavItems: RoleNavItem[] = [
+    {
+        title: 'Service Jobs',
+        href: '/service-jobs',
+        icon: Wrench,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Create Service Job',
+        href: '/service-jobs/create',
+        icon: Plus,
+        roles: ['company_admin', 'cashier'], // Technicians usually work on jobs, admins create? Or techs create too? Seeder permission says technicians can view/edit. Maybe create?
+    },
+    {
+        title: 'Quotations',
+        href: '/quotations',
+        icon: ScrollText,
+        roles: ['company_admin', 'cashier', 'technician'], // Cashiers handle billing
+    },
+    {
+        title: 'Job History',
+        href: '/service-jobs/history',
+        icon: History,
+        roles: ['company_admin', 'cashier', 'technician'],
+    },
+];
+
+// Section 6: Reports
+const reportsNavItems: RoleNavItem[] = [
+    {
+        title: 'Customer Details Report',
+        href: '/reports/customer-details',
+        icon: FileText,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Customer Ledger Card',
+        href: '/reports/customer-ledger',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Supplier Ledger Card',
+        href: '/reports/supplier-ledger',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Stock In Hand Report',
+        href: '/reports/stock-in-hand',
+        icon: FileText,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Printer Stock In Hand Report',
+        href: '/reports/printer-stock',
+        icon: PrinterIcon,
+        roles: ['company_admin', 'technician', 'cashier'],
+    },
+    {
+        title: 'Printer Stock Bin Card',
+        href: '/reports/printer-stock-bin-card',
+        icon: PrinterIcon,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Wastage Report',
+        href: '/reports/wastage',
+        icon: Trash2,
+        roles: ['company_admin', 'cashier', 'technician'],
+    },
+    {
+        title: 'Purchase Orders',
+        href: '/reports/purchase-orders',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Sales Report',
+        href: '/reports/sales',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Stock Bin Card',
+        href: '/reports/stock-bin-card',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Supplier Details Report',
+        href: '/reports/supplier-details',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Item List Report',
+        href: '/reports/item-list',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Sale Items Report',
+        href: '/reports/sale-items',
+        icon: FileText,
+        roles: ['company_admin', 'cashier'],
+    },
+    {
+        title: 'Collection Report',
+        href: '/reports/collection-report',
+        icon: DollarSign,
+        roles: ['company_admin', 'cashier'],
+    },
+];
+
+// Admin items (for super admin only)
+const adminNavItems: RoleNavItem[] = [
+    {
+        title: 'Roles',
+        href: '/roles',
+        icon: Shield,
+        roles: ['super_admin', 'company_admin'],
+    },
+    {
+        title: 'Permissions',
+        href: '/permissions',
+        icon: Key,
+        roles: ['super_admin', 'company_admin'],
+    },
+];
+
+const footerNavItems: NavItem[] = [];
+
+export function AppSidebar() {
+    const { auth } = usePage<SharedData>().props;
+    const page = usePage();
+    const user = auth.user;
+
+    // Determine user role and type
+    const userType = user?.user_type as string | undefined;
+    // @ts-ignore - role property comes from eager load but might not be in TS definition yet
+    const roleSlug = user?.role?.slug as string | undefined;
+
+    // Helper to check if item should be shown
+    const shouldShow = (item: RoleNavItem) => {
+        if (userType === 'super_admin') return true;
+
+        // If no roles specified, show to everyone (or specify restrictions)
+        if (!item.roles || item.roles.length === 0) return true;
+
+        if (!roleSlug && !userType) return false;
+
+        // Check if user's role is in the allowed roles list
+        return (roleSlug && item.roles.includes(roleSlug)) || (userType && item.roles.includes(userType));
+    };
+
+    // Filter groups
+    const filteredCompanyItems = companyNavItems.filter(shouldShow);
+    const filteredProductsItems = productsNavItems.filter(shouldShow);
+    const filteredPrinterStockItems = printerStockNavItems.filter(shouldShow);
+    const filteredPaymentsItems = paymentsNavItems.filter(shouldShow);
+    const filteredServicesItems = servicesNavItems.filter(shouldShow);
+    const filteredReportsItems = reportsNavItems.filter(shouldShow);
+    const filteredAdminItems = adminNavItems.filter(shouldShow);
+
+    return (
+        <Sidebar collapsible="icon" variant="inset">
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href={dashboard()} prefetch>
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+
+            <SidebarContent>
+                {/* Section 1: Company & Users */}
+                {filteredCompanyItems.length > 0 && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Company & Users</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredCompanyItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Section 2: Products & Sales */}
+                {filteredProductsItems.length > 0 && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Products & Sales</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredProductsItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Section 3: Printer & Stock Transfer */}
+                {filteredPrinterStockItems.length > 0 && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Stock & Wastage</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredPrinterStockItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Section 4: Payments */}
+                {filteredPaymentsItems.length > 0 && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Payments</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredPaymentsItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Section 5: Service Jobs */}
+                {filteredServicesItems.length > 0 && (
+                    <SidebarGroup className="px-2 py-0">
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Service Jobs</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredServicesItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Section 6: Reports */}
+                {filteredReportsItems.length > 0 && (
+                    <SidebarGroup className='px-2 py-0'>
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Reports</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredReportsItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+
+                {/* Admin Section */}
+                {filteredAdminItems.length > 0 && (
+                    <SidebarGroup className='px-2 py-0'>
+                        <SidebarGroupLabel className="text-black font-bold text-sm">Admin</SidebarGroupLabel>
+                        <SidebarMenu>
+                            {filteredAdminItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={page.url.startsWith(resolveUrl(item.href))}
+                                        tooltip={{ children: item.title }}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroup>
+                )}
+            </SidebarContent>
+
+            <SidebarFooter>
+                <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavUser />
+            </SidebarFooter>
+        </Sidebar>
+    );
+}

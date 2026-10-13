@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
+
+class Company extends Authenticatable
+{
+    use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'company_code',
+        'name',
+        'contact_person_name',
+        'contact_person_number',
+        'email',
+        'password',
+        'phone',
+        'address',
+        'city',
+        'state',
+        'country',
+        'postal_code',
+        'tax_id',
+        'vat_rate',
+        'vat_no',
+        'vat_effective_date',
+        'parent_id',
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
+
+    protected $casts = [
+        'vat_effective_date' => 'date',
+        'password' => 'hashed',
+    ];
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(Section::class, 'company_code', 'company_code');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Company::class, 'parent_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'parent_id');
+    }
+
+    /**
+     * Get all accessible sections.
+     * If this company has children, include their sections.
+     */
+    public function getAccessibleSectionsAttribute()
+    {
+        // Load sections if not already loaded
+        if (!$this->relationLoaded('sections')) {
+            $this->load('sections');
+        }
+
+        // Load children if not already loaded
+        if (!$this->relationLoaded('children')) {
+            $this->load('children.sections');
+        }
+
+        $sections = $this->sections ?? collect();
+
+        foreach ($this->children ?? collect() as $child) {
+            $sections = $sections->merge($child->sections ?? collect());
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Get the package details for the company (if exists).
+     * This is a placeholder - implement when package system is ready.
+     */
+    public function packageDetails()
+    {
+        // TODO: Implement package details relationship when package table is created
+        // return $this->hasOne(PackageDetail::class, 'company_code', 'company_code');
+        return null;
+    }
+
+    public function vatRates(): HasMany
+    {
+        return $this->hasMany(VatRate::class, 'company_id', 'id');
+    }
+}
