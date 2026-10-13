@@ -11,6 +11,7 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
             refresh: true,
+            detectTls: 'base-vismas.test',
         }),
         react({
             babel: {
@@ -29,15 +30,5 @@ export default defineConfig({
     },
     esbuild: {
         jsx: 'automatic',
-    },
-    server: {
-        https: false,
-        hmr: {
-            host: 'localhost',
-            // host: 'distribution-system.test',
-            protocol: 'ws',
-            // protocol: 'wss',
-        },
-        host: '0.0.0.0',
     },
 });
