@@ -1,14 +1,11 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-
-// Declare route function (available globally via Ziggy)
 declare function route(name: string, params?: any): string;
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save, Shield, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -47,9 +47,4 @@ class CodeMaster extends Model
     {
         return $query->where('conkey', $conkey);
     }
-
-    public function brands()
-    {
-        return $this->hasMany(Brand::class, 'category_id');
-    }
 }

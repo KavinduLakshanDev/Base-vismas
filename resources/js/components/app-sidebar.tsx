@@ -52,135 +52,38 @@ const companyNavItems: RoleNavItem[] = [
         icon: Users,
         roles: ['company_admin'],
     },
-    {
-        title: 'Customers',
-        href: '/admin/customers',
-        icon: User,
-        roles: ['company_admin', 'cashier'], // Cashiers manage customers
-    },
-    {
-        title: 'Suppliers',
-        href: '/suppliers',
-        icon: Truck,
-        roles: ['company_admin'],
-    },
+    
 ];
 
 // Section 2: Products & Sales
 const productsNavItems: RoleNavItem[] = [];
 
-// Section 3: Stock & Wastage Transfer
-const printerStockNavItems: RoleNavItem[] = [
-    {
-        title: 'Stock Transfer',
-        href: '/stock-transfers',
-        icon: ArrowRightLeft,
-        roles: ['company_admin'],
-    },
-    {
-        title: 'Item Wastage',
-        href: '/wastages',
-        icon: AlertTriangle,
-        roles: ['company_admin'],
-    },
-];
+// Section 3: Printer & Stock Transfer
+const printerStockNavItems: RoleNavItem[] = [];
 
 // Section 4: Payments
-const paymentsNavItems: RoleNavItem[] = [
-    {
-        title: 'Customer Payments',
-        href: '/admin/customer-payments',
-        icon: DollarSign,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Supplier Payments',
-        href: '/admin/supplier-payments',
-        icon: DollarSign,
-        roles: ['company_admin'],
-    },
-    {
-        title: 'Supplier Returns',
-        href: '/supplier-returns',
-        icon: AlertTriangle,
-        roles: ['company_admin'],
-    },
-    {
-        title: 'Bank Accounts',
-        href: '/admin/bank-accounts',
-        icon: Building2,
-    },
-];
+const paymentsNavItems: RoleNavItem[] = [];
 
 // Section 5: Service Jobs
 const servicesNavItems: RoleNavItem[] = [];
 
 // Section 6: Reports
-const reportsNavItems: RoleNavItem[] = [
-    {
-        title: 'Customer Details Report',
-        href: '/reports/customer-details',
-        icon: FileText,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Customer Ledger Card',
-        href: '/reports/customer-ledger',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Supplier Ledger Card',
-        href: '/reports/supplier-ledger',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Stock In Hand Report',
-        href: '/reports/stock-in-hand',
-        icon: FileText,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Printer Stock In Hand Report',
-        href: '/reports/printer-stock',
-        icon: PrinterIcon,
-        roles: ['company_admin', 'technician', 'cashier'],
-    },
-    {
-        title: 'Wastage Report',
-        href: '/reports/wastage',
-        icon: Trash2,
-        roles: ['company_admin', 'cashier', 'technician'],
-    },
-    {
-        title: 'Stock Bin Card',
-        href: '/reports/stock-bin-card',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Supplier Details Report',
-        href: '/reports/supplier-details',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Item List Report',
-        href: '/reports/item-list',
-        icon: FileText,
-        roles: ['company_admin', 'cashier'],
-    },
-    {
-        title: 'Collection Report',
-        href: '/reports/collection-report',
-        icon: DollarSign,
-        roles: ['company_admin', 'cashier'],
-    },
-];
+const reportsNavItems: RoleNavItem[] = [];
 
-// Admin items (for super admin only)
+// Admin items
 const adminNavItems: RoleNavItem[] = [
+    {
+        title: 'Controller Master',
+        href: '/admin/controller-master',
+        icon: Database,
+        roles: ['super_admin', 'company_admin'],
+    },
+    {
+        title: 'Code Master',
+        href: '/admin/code-master',
+        icon: Code,
+        roles: ['super_admin', 'company_admin'],
+    },
     {
         title: 'Roles',
         href: '/roles',
@@ -359,28 +262,6 @@ export function AppSidebar() {
                     </SidebarGroup>
                 )}
 
-                {/* Section 6: Reports */}
-                {filteredReportsItems.length > 0 && (
-                    <SidebarGroup className='px-2 py-0'>
-                        <SidebarGroupLabel className="text-black font-bold text-sm">Reports</SidebarGroupLabel>
-                        <SidebarMenu>
-                            {filteredReportsItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        isActive={page.url.startsWith(resolveUrl(item.href))}
-                                        tooltip={{ children: item.title }}
-                                    >
-                                        <Link href={item.href} prefetch>
-                                            {item.icon && <item.icon />}
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroup>
-                )}
 
                 {/* Admin Section */}
                 {filteredAdminItems.length > 0 && (
