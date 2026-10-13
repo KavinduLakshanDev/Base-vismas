@@ -349,26 +349,23 @@ export default function UsersEdit({
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                    {isSuperAdmin && companiesList.length > 0 && (
-                                        <div>
-                                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                                                {t('Company')}
-                                            </label>
-                                            <select
-                                                name="company_code"
-                                                value={formData.company_code}
-                                                onChange={handleInputChange}
-                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-vismass-blue focus:ring-2 focus:ring-vismass-blue/20 transition"
-                                            >
-                                                <option value="">{t('None (Super Admin User)')}</option>
-                                                {companiesList.map((c) => (
-                                                    <option key={c.id} value={c.company_code}>
-                                                        {c.name} ({c.company_code})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                    {/* Company Scope (Active Company) */}
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                            {t('Assigned Company')}
+                                        </label>
+                                        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-sm text-slate-800">
+                                            <Building2 className="h-4 w-4 text-vismass-blue" />
+                                            <span className="font-medium">
+                                                {user.company?.name || user.company_code || 'Company'}
+                                            </span>
+                                            {user.company_code && (
+                                                <span className="ml-auto rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                                    {user.company_code}
+                                                </span>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
 
                                     <div>
                                         <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">

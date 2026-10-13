@@ -259,32 +259,50 @@ export default function Edit({
                                         </div>
 
                                         {companies.length > 0 && (
-                                            <div className="space-y-2">
-                                                <Label htmlFor="company_id" className="text-sm font-medium text-slate-700 flex items-center">
-                                                    <Building2 className="w-4 h-4 mr-2 text-vismass-blue" />
-                                                    {t('Company Scope')}
-                                                </Label>
-                                                <Select
-                                                    value={data.company_id}
-                                                    onValueChange={(value) => {
-                                                        setData('company_id', value === 'none' ? '' : value);
-                                                        setData('section_id', '');
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
-                                                        <SelectValue placeholder={t('Select company (optional)')} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="none">{t('System Wide (All Companies)')}</SelectItem>
-                                                        {companies.map((c) => (
-                                                            <SelectItem key={c.id} value={c.id.toString()}>
-                                                                {c.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <InputError message={errors.company_id} />
-                                            </div>
+                                            companies.length === 1 ? (
+                                                <div className="space-y-2">
+                                                    <Label className="text-sm font-medium text-slate-700 flex items-center">
+                                                        <Building2 className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                        {t('Assigned Company')}
+                                                    </Label>
+                                                    <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-sm text-slate-800">
+                                                        <Building2 className="h-4 w-4 text-vismass-blue" />
+                                                        <span className="font-medium">
+                                                            {companies[0].name}
+                                                        </span>
+                                                        <span className="ml-auto rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                                            {companies[0].company_code}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="company_id" className="text-sm font-medium text-slate-700 flex items-center">
+                                                        <Building2 className="w-4 h-4 mr-2 text-vismass-blue" />
+                                                        {t('Company Scope')}
+                                                    </Label>
+                                                    <Select
+                                                        value={data.company_id}
+                                                        onValueChange={(value) => {
+                                                            setData('company_id', value === 'none' ? '' : value);
+                                                            setData('section_id', '');
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
+                                                            <SelectValue placeholder={t('Select company (optional)')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="none">{t('System Wide (All Companies)')}</SelectItem>
+                                                            {companies.map((c) => (
+                                                                <SelectItem key={c.id} value={c.id.toString()}>
+                                                                    {c.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <InputError message={errors.company_id} />
+                                                </div>
+                                            )
                                         )}
 
                                         {sections.length > 0 && data.company_id && (

@@ -20,7 +20,21 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\Laravel\Fortify\Contracts\LoginResponse::class, function () {
+            return new class implements \Laravel\Fortify\Contracts\LoginResponse {
+                public function toResponse($request)
+                {
+                    $user = $request->user();
+
+                    if ($user && method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) {
+                        session()->forget('active_company_code');
+                        return redirect()->route('company.select');
+                    }
+
+                    return redirect()->intended(config('fortify.home'));
+                }
+            };
+        });
     }
 
     /**

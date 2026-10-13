@@ -14,37 +14,41 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    private function getActiveCompanyCode(Request $request): ?string
     {
-        $query = User::with(['company', 'section', 'role']);
-
         $company = $request->user('company');
         $user = $request->user('web');
-        
+
+        return session('active_company_code', $company ? $company->company_code : ($user ? $user->company_code : null));
+    }
+
+    public function index(Request $request)
+    {
+        $company = $request->user('company');
+        $user = $request->user('web');
+
         if (!$company && !$user) {
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
             return redirect()->route('company.login');
         }
-        
-        $companyCode = $company ? $company->company_code : ($user ? $user->company_code : null);
-        
-        // Filter by company for non-super-admins
-        if ($user && $user->user_type === 'super_admin') {
-            if ($request->has('company_code') && $request->company_code) {
-                $query->where('company_code', $request->company_code);
-            }
-        } elseif ($companyCode) {
-            $query->where('company_code', $companyCode);
+
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        $query = User::with(['company', 'section', 'role']);
+
+        // Strictly isolate all users to the selected company
+        if ($activeCompanyCode) {
+            $query->where('company_code', $activeCompanyCode);
         }
 
-        // Filter by section
+        // Filter by section within active company
         if ($request->has('section_code') && $request->section_code) {
             $query->where('section_code', $request->section_code);
         }
 
-        // Filter by role
+        // Filter by role within active company
         if ($request->has('role_id') && $request->role_id) {
             $query->where('role_id', $request->role_id);
         }
@@ -55,61 +59,53 @@ class UserController extends Controller
             return response()->json($users);
         }
 
-        $roles = Role::orderBy('name')->get();
-        $sections = Section::where('is_active', true)->orderBy('name')->get();
-        $companies = ($user && $user->user_type === 'super_admin') ? Company::where('is_active', true)->orderBy('name')->get() : [];
+        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+            $q->where('company_code', $activeCompanyCode)
+              ->orWhere('is_system_role', true);
+        })->orderBy('name')->get();
+
+        $sections = Section::where('company_code', $activeCompanyCode)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        $companies = Company::where('company_code', $activeCompanyCode)->get();
 
         return Inertia::render('Users/Index', [
             'users' => $users,
             'roles' => $roles,
             'sections' => $sections,
             'companies' => $companies,
+            'activeCompanyCode' => $activeCompanyCode,
         ]);
     }
 
     public function create(Request $request)
     {
-        $user = $request->user('web');
-        $company = $request->user('company');
-        $companyCode = $company ? $company->company_code : ($user ? $user->company_code : null);
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
 
-        $rolesQuery = Role::orderBy('name');
-        if ($user && $user->user_type !== 'super_admin') {
-            $rolesQuery->where('level', '!=', 'super_admin');
-        }
-        $roles = $rolesQuery->get();
+        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+            $q->where('company_code', $activeCompanyCode)
+              ->orWhere('is_system_role', true);
+        })->orderBy('name')->get();
 
-        $sectionsQuery = Section::where('is_active', true)->orderBy('name');
-        if ($user && $user->user_type !== 'super_admin' && $companyCode) {
-            $sectionsQuery->where('company_code', $companyCode);
-        }
-        $sections = $sectionsQuery->get();
+        $sections = Section::where('company_code', $activeCompanyCode)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
-        $companies = ($user && $user->user_type === 'super_admin') ? Company::where('is_active', true)->orderBy('name')->get() : [];
+        $companies = Company::where('company_code', $activeCompanyCode)->get();
 
         return Inertia::render('Users/Create', [
             'roles' => $roles,
             'sections' => $sections,
             'companies' => $companies,
+            'activeCompanyCode' => $activeCompanyCode,
         ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'user_type' => 'nullable|in:super_admin,company_user',
-            'company_code' => 'nullable|string|exists:companies,company_code',
-            'section_code' => 'nullable|string|exists:sections,section_code',
-            'role_id' => 'required|exists:roles,id',
-            'is_active' => 'boolean',
-        ]);
-
         $authUser = $request->user('web');
         $authCompany = $request->user('company');
 
@@ -120,20 +116,23 @@ class UserController extends Controller
             return redirect()->route('company.login');
         }
 
-        // Set user_type and company_code appropriately
-        if ($authUser && $authUser->user_type === 'super_admin') {
-            if (!empty($validated['company_code'])) {
-                $validated['user_type'] = 'company_user';
-            } else {
-                $validated['user_type'] = 'super_admin';
-                $validated['company_code'] = null;
-                $validated['section_code'] = null;
-            }
-        } else {
-            $companyCode = $authCompany ? $authCompany->company_code : ($authUser ? $authUser->company_code : null);
-            $validated['user_type'] = 'company_user';
-            $validated['company_code'] = $companyCode;
-        }
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        $validated = $request->validate([
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'section_code' => 'nullable|string|exists:sections,section_code',
+            'role_id' => 'required|exists:roles,id',
+            'is_active' => 'boolean',
+        ]);
+
+        // Automatically assign user strictly to the active selected company
+        $validated['user_type'] = 'company_user';
+        $validated['company_code'] = $activeCompanyCode;
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['uuid'] = (string) Str::uuid();
@@ -153,6 +152,13 @@ class UserController extends Controller
 
     public function show(Request $request, User $user)
     {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        // Disallow viewing users from other companies
+        if ($user->company_code && $activeCompanyCode && $user->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access to this user.');
+        }
+
         $user->load(['company', 'section', 'role.permissions']);
 
         if ($request->wantsJson() || $request->is('api/*')) {
@@ -166,48 +172,59 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user)
     {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        // Disallow editing users from other companies
+        if ($user->company_code && $activeCompanyCode && $user->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access to this user.');
+        }
+
         $user->load(['company', 'section', 'role']);
 
-        $authUser = $request->user('web');
-        $authCompany = $request->user('company');
-        $companyCode = $authCompany ? $authCompany->company_code : ($authUser ? $authUser->company_code : null);
+        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+            $q->where('company_code', $activeCompanyCode)
+              ->orWhere('is_system_role', true);
+        })->orderBy('name')->get();
 
-        $rolesQuery = Role::orderBy('name');
-        if ($authUser && $authUser->user_type !== 'super_admin') {
-            $rolesQuery->where('level', '!=', 'super_admin');
-        }
-        $roles = $rolesQuery->get();
+        $sections = Section::where('company_code', $activeCompanyCode)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
-        $sectionsQuery = Section::where('is_active', true)->orderBy('name');
-        if ($authUser && $authUser->user_type !== 'super_admin' && $companyCode) {
-            $sectionsQuery->where('company_code', $companyCode);
-        }
-        $sections = $sectionsQuery->get();
-
-        $companies = ($authUser && $authUser->user_type === 'super_admin') ? Company::where('is_active', true)->orderBy('name')->get() : [];
+        $companies = Company::where('company_code', $activeCompanyCode)->get();
 
         return Inertia::render('Users/Edit', [
             'user' => $user,
             'roles' => $roles,
             'sections' => $sections,
             'companies' => $companies,
+            'activeCompanyCode' => $activeCompanyCode,
         ]);
     }
 
     public function update(Request $request, User $user)
     {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        // Disallow editing users from other companies
+        if ($user->company_code && $activeCompanyCode && $user->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access to this user.');
+        }
+
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'company_code' => 'nullable|string|exists:companies,company_code',
             'section_code' => 'nullable|string|exists:sections,section_code',
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'boolean',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
+
+        // Keep company locked to active company
+        $validated['company_code'] = $activeCompanyCode;
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -227,6 +244,12 @@ class UserController extends Controller
 
     public function destroy(Request $request, User $user)
     {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        if ($user->company_code && $activeCompanyCode && $user->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access.');
+        }
+
         $user->delete();
 
         if ($request->wantsJson() || $request->is('api/*')) {
@@ -238,6 +261,12 @@ class UserController extends Controller
 
     public function toggle(Request $request, User $user)
     {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        if ($user->company_code && $activeCompanyCode && $user->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access.');
+        }
+
         $user->is_active = !$user->is_active;
         $user->save();
 

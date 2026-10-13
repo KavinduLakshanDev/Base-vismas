@@ -13,17 +13,16 @@ class CompanyController extends Controller
         $user = $request->user('web');
         $company = $request->user('company');
         
+        $activeCompanyCode = session('active_company_code', $company ? $company->company_code : ($user ? $user->company_code : null));
+        
+        if ($activeCompanyCode) {
+            return response()->json(Company::where('company_code', $activeCompanyCode)->get());
+        }
+
         if ($user && $user->user_type === 'super_admin') {
             return response()->json(Company::all());
         }
 
-        $companyCode = $company ? $company->company_code : ($user ? $user->company_code : null);
-        
-        if (!$companyCode) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        // Other users can only see their own company
-        return response()->json(Company::where('company_code', $companyCode)->get());
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
 }

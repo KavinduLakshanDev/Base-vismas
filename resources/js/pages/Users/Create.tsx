@@ -38,6 +38,8 @@ export default function UsersCreate({
     const { auth } = usePage<any>().props;
     const authUser = auth?.user;
     const isSuperAdmin = authUser?.user_type === 'super_admin' || authUser?.role_id === 1;
+    const activeCompany = (props.auth as any)?.active_company || (authUser as any)?.company;
+    const activeCompanyCode = activeCompany?.company_code || authUser?.company_code || '';
 
     const [formData, setFormData] = useState({
         username: '',
@@ -47,7 +49,7 @@ export default function UsersCreate({
         first_name: '',
         last_name: '',
         phone: '',
-        company_code: isSuperAdmin ? '' : (authUser?.company_code || ''),
+        company_code: activeCompanyCode,
         section_code: authUser?.section_code || '',
         role_id: '',
         is_active: true,
@@ -346,27 +348,23 @@ export default function UsersCreate({
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                    {/* Company (if Super Admin) */}
-                                    {isSuperAdmin && companiesList.length > 0 && (
-                                        <div>
-                                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                                                {t('Company')}
-                                            </label>
-                                            <select
-                                                name="company_code"
-                                                value={formData.company_code}
-                                                onChange={handleInputChange}
-                                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-vismass-blue focus:ring-2 focus:ring-vismass-blue/20 transition"
-                                            >
-                                                <option value="">{t('None (Super Admin User)')}</option>
-                                                {companiesList.map((c) => (
-                                                    <option key={c.id} value={c.company_code}>
-                                                        {c.name} ({c.company_code})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                    {/* Company Scope (Active Company) */}
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+                                            {t('Assigned Company')}
+                                        </label>
+                                        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-sm text-slate-800">
+                                            <Building2 className="h-4 w-4 text-vismass-blue" />
+                                            <span className="font-medium">
+                                                {activeCompany?.name || activeCompany?.company_code || activeCompanyCode || 'Default'}
+                                            </span>
+                                            {activeCompanyCode && (
+                                                <span className="ml-auto rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                                    {activeCompanyCode}
+                                                </span>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
 
                                     {/* Section */}
                                     <div>

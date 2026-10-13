@@ -46,8 +46,9 @@ class CodeMasterController extends Controller
 
         $codes = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        // Super admin can see all control masters
-        $controls = ControlMaster::where('is_active', true)
+        $companyCode = $user ? $user->company_code : session('active_company_code');
+        $controls = ControlMaster::where('company_code', $companyCode)
+            ->where('is_active', true)
             ->orderBy('conname')
             ->get();
 
@@ -63,8 +64,10 @@ class CodeMasterController extends Controller
 
     public function create()
     {
-        // Super admin can access all control masters
-        $controls = ControlMaster::where('is_active', true)
+        $user = Auth::user();
+        $companyCode = $user ? $user->company_code : session('active_company_code');
+        $controls = ControlMaster::where('company_code', $companyCode)
+            ->where('is_active', true)
             ->orderBy('conname')
             ->get();
 
@@ -137,9 +140,10 @@ class CodeMasterController extends Controller
 
     public function edit(CodeMaster $codeMaster)
     {
-        // Super admin can access all data
-
-        $controls = ControlMaster::where('is_active', true)
+        $user = Auth::user();
+        $companyCode = $user ? $user->company_code : session('active_company_code');
+        $controls = ControlMaster::where('company_code', $companyCode)
+            ->where('is_active', true)
             ->orderBy('conname')
             ->get();
 
