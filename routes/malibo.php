@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\DeliveryRouteController;
-use App\Http\Controllers\PrinterTransferController;
 use App\Http\Controllers\Reports\PrinterStockReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -60,19 +59,7 @@ Route::middleware(['auth:web,company', 'verified', 'business.unit:malibo'])->pre
         Route::get('/stock/export', [PrinterStockReportController::class, 'export'])->name('stock.export');
         Route::get('/stock/low-stock', [PrinterStockReportController::class, 'lowStock'])->name('stock.low-stock');
         
-        // Printer Transfers
-        Route::get('/transfers', [PrinterTransferController::class, 'index'])->name('transfers.index');
-        Route::get('/transfers/create', [PrinterTransferController::class, 'create'])->name('transfers.create');
-        Route::post('/transfers', [PrinterTransferController::class, 'store'])->name('transfers.store');
-        Route::get('/transfers/{transfer}', [PrinterTransferController::class, 'show'])->name('transfers.show');
-        Route::get('/transfers/{transfer}/edit', [PrinterTransferController::class, 'edit'])->name('transfers.edit');
-        Route::put('/transfers/{transfer}', [PrinterTransferController::class, 'update'])->name('transfers.update');
-        Route::delete('/transfers/{transfer}', [PrinterTransferController::class, 'destroy'])->name('transfers.destroy');
-        
-        // Transfer-specific operations
-        Route::patch('/transfers/{transfer}/approve', [PrinterTransferController::class, 'approve'])->name('transfers.approve');
-        Route::patch('/transfers/{transfer}/reject', [PrinterTransferController::class, 'reject'])->name('transfers.reject');
-        Route::get('/transfers/{transfer}/receipt', [PrinterTransferController::class, 'generateReceipt'])->name('transfers.receipt');
+
         
         // Printing Jobs Management - TODO: Implement Controller
         // Route::prefix('jobs')->name('jobs.')->group(function () {
