@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->nullable()->unique();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->enum('level', ['super_admin', 'company_admin', 'section_user', 'technician', 'distributor', 'print user', 'cashier', 'user'])->default('user');
+            $table->string('level')->default('user');
             $table->string('company_code')->nullable();
             $table->string('section_code')->nullable();
             $table->boolean('is_system_role')->default(false);

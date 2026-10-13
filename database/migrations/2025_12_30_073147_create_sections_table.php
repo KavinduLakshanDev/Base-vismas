@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('country')->nullable();
             $table->string('postal_code')->nullable();
             $table->enum('section_type', ['warehouse', 'store', 'office', 'other'])->default('other');
+            $table->boolean('is_main_stock')->default(false);
             $table->boolean('is_active')->default(true);
             $table->json('settings_json')->nullable();
             $table->timestamps();

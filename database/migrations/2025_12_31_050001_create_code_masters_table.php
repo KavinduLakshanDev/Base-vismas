@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('cname', 100);
             $table->text('description')->nullable();
             $table->string('company_code', 255);
+            $table->string('branch_code', 255)->nullable();
             $table->string('section_code', 255)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
