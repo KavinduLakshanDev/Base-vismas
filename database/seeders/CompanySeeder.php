@@ -35,35 +35,6 @@ class CompanySeeder extends Seeder
             ]
         );
 
-        // Create Vismass Sections
-        Section::firstOrCreate(
-            ['section_code' => 'VIS-SEC-001'],
-            [
-                'uuid' => \Illuminate\Support\Str::uuid(),
-                'company_code' => $vismass->company_code,
-                'name' => 'Service',
-                'section_type' => 'other'
-            ]
-        );
-        Section::firstOrCreate(
-            ['section_code' => 'VIS-SEC-002'],
-            [
-                'uuid' => \Illuminate\Support\Str::uuid(),
-                'company_code' => $vismass->company_code,
-                'name' => 'Import Buying and Selling',
-                'section_type' => 'store'
-            ]
-        );
-        Section::firstOrCreate(
-            ['section_code' => 'VIS-SEC-003'],
-            [
-                'uuid' => \Illuminate\Support\Str::uuid(),
-                'company_code' => $vismass->company_code,
-                'name' => 'Main Stock',
-                'section_type' => 'store',
-                'is_main_stock' => true
-            ]
-        );
 
         // Create MALIBO Company
         $malibo = Company::firstOrCreate(
@@ -84,26 +55,6 @@ class CompanySeeder extends Seeder
                 'vat_rate' => 0.00, // No VAT for MALIBO
                 'vat_no' => null,
                 'vat_effective_date' => null,
-            ]
-        );
-
-        // Create MALIBO Sections (only Delivery and Printing)
-        Section::firstOrCreate(
-            ['section_code' => 'MAL-SEC-001'],
-            [
-                'uuid' => \Illuminate\Support\Str::uuid(),
-                'company_code' => $malibo->company_code,
-                'name' => 'Delivery',
-                'section_type' => 'other'
-            ]
-        );
-        Section::firstOrCreate(
-            ['section_code' => 'MAL-SEC-002'],
-            [
-                'uuid' => \Illuminate\Support\Str::uuid(),
-                'company_code' => $malibo->company_code,
-                'name' => 'Printing',
-                'section_type' => 'other'
             ]
         );
     }

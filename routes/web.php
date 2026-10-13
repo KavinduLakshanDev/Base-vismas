@@ -29,7 +29,7 @@ Route::middleware('guest:company')->group(function () {
     Route::post('company/login', [CompanyAuthController::class, 'store']);
 });
 
-Route::middleware([])->group(function () {
+Route::middleware(['auth:web,company'])->group(function () {
     Route::get('company/dashboard', function () {
         return Inertia::render('company-dashboard');
     })->name('company.dashboard');

@@ -41,13 +41,28 @@ class HandleInertiaRequests extends Middleware
         $quote = Inspiring::quotes()->random();
         [$message, $author] = str($quote)->explode('-', 2); // Limit to 2 parts
 
+        $user = $request->user();
+
+        if ($user instanceof \App\Models\User) {
+            $user->loadMissing('role.permissions');
+        }
+
+        $company = $request->user('company');
+        if (! $company) {
+            if ($user instanceof \App\Models\Company) {
+                $company = $user;
+            } elseif ($user instanceof \App\Models\User) {
+                $company = $user->company;
+            }
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message ?? ''), 'author' => trim($author ?? '')],
             'auth' => [
-                'user' => $request->user() ? $request->user()->load('role.permissions') : null,
-                'company' => $request->user('company'),
+                'user' => $user,
+                'company' => $company,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'ziggy' => fn () => array_merge((new Ziggy)->toArray(), [

@@ -13,7 +13,7 @@ import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 
 interface UserMenuContentProps {
-    user: User;
+    user?: User | null;
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
@@ -50,7 +50,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuItem asChild>
                 <Link
                     className="block w-full"
-                    href={user.company_code ? '/company/logout' : logout()}
+                    href={user?.company_code ? '/company/logout' : logout()}
                     method="post"
                     as="button"
                     onClick={handleLogout}

@@ -17,18 +17,17 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             CompanySeeder::class,
-            ControlMasterSeeder::class,
+            // ControlMasterSeeder::class,
             SectionSeeder::class,
-            VismassUserSeeder::class,
-            MaliboUserSeeder::class,
-            UsersSeeder::class,
+        
+            // UsersSeeder::class,
          
         ]);
 
         // User::factory(10)->create();
 
         User::firstOrCreate(
-            ['email' => 'admin@unitec.edu.ph'],
+            ['email' => 'unitec@pay.com'],
             [
                 'username' => 'unitec_admin',
                 'first_name' => 'Unitec',

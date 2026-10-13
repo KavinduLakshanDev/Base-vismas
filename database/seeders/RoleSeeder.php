@@ -33,30 +33,5 @@ class RoleSeeder extends Seeder
                 'company_code' => null,
             ]
         );
-
-
-
-        // Technician
-        Role::firstOrCreate(
-            ['slug' => 'technician'],
-            [
-                'name' => 'Technician',
-                'description' => 'Technician role',
-                'level' => 'section_user',
-                'company_code' => null,
-            ]
-        );
-
-
-        // Cashier
-        Role::firstOrCreate(
-            ['slug' => 'cashier'],
-            [
-                'name' => 'Cashier',
-                'description' => 'Cashier role',
-                'level' => 'section_user',
-                'company_code' => null,
-            ]
-        );
     }
 }

@@ -126,7 +126,7 @@ const UserManagement: React.FC = () => {
     // Normalize authUser to handle both User and Company models
     const authUser = useMemo(() => ({
         ...rawAuthUser,
-        role_id: rawAuthUser.role_id || (rawAuthUser.company_code && !rawAuthUser.role_id ? 2 : 0), // Treat Company as Company Admin (role_id 2)
+        role_id: rawAuthUser?.role_id || (rawAuthUser?.company_code && !rawAuthUser?.role_id ? 2 : 0), // Treat Company as Company Admin (role_id 2)
     }), [rawAuthUser]);
 
     const [users, setUsers] = useState<User[]>([]);

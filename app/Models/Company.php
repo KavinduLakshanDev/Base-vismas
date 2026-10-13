@@ -41,6 +41,25 @@ class Company extends Authenticatable
         'password' => 'hashed',
     ];
 
+    protected $appends = [
+        'user_type',
+    ];
+
+    public function getUserTypeAttribute(): string
+    {
+        return 'company_admin';
+    }
+
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return true;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return false;
+    }
+
     public function sections(): HasMany
     {
         return $this->hasMany(Section::class, 'company_code', 'company_code');
