@@ -1,9 +1,13 @@
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { t } from '@/lib/i18n';
 import { index, show } from '@/routes/admin/controller-master';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Code, Save, X } from 'lucide-react';
+import { ArrowLeft, Code, Database, Edit2, Save, CheckCircle2 } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 interface ControlMaster {
@@ -50,123 +54,179 @@ export default function EditControllerMaster({ control }: Props) {
 
     const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
-        put(show({ controller_master: control.id }).url);
+        put(`/admin/controller-master/${control.id}`);
     };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${t('Edit')} ${control.conname} - ${t('Controller Master')}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl p-6">
+            <div className="min-h-screen bg-slate-50">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <Link
-                            href={index().url}
-                            className="rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                        </Link>
-                        <div className="flex items-center space-x-3">
-                            <div className="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-900">
-                                <Code className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {t('Edit Controller')}
-                                </h1>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {t('Update controller:')} {control.conname}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <Link
-                        href="/admin/controller-master"
-                        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
-                    >
-                        <X className="mr-2 h-4 w-4" />
-                        {t('Cancel')}
-                    </Link>
-                </div>
-
-                {/* Edit Form */}
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            {/* Control Key */}
-                            <div>
-                                <label htmlFor="conkey" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {t('Control Key')} <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="conkey"
-                                    type="text"
-                                    value={data.conkey}
-                                    onChange={(e) => setData('conkey', e.target.value)}
-                                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white ${
-                                        errors.conkey ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                />
-                                {errors.conkey && (
-                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.conkey}</p>
-                                )}
-                            </div>
-
-                            {/* Control Name */}
-                            <div>
-                                <label htmlFor="conname" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {t('Control Name')} <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    id="conname"
-                                    type="text"
-                                    value={data.conname}
-                                    onChange={(e) => setData('conname', e.target.value)}
-                                    className={`mt-1 block w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white ${
-                                        errors.conname ? 'border-red-300' : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                />
-                                {errors.conname && (
-                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.conname}</p>
-                                )}
-                            </div>
-
-                            {/* Status */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {t('Status')}
-                                </label>
-                                <div className="mt-1">
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={data.is_active}
-                                            onChange={(e) => setData('is_active', e.target.checked)}
-                                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                            {t('Active')}
-                                        </span>
-                                    </label>
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between py-6">
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    href={index().url}
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Edit2 className="h-7 w-7 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">
+                                        {t('Edit Controller Master')}
+                                    </h1>
+                                    <p className="text-sm text-white/80">
+                                        {t('Update controller:')} {control.conname}
+                                    </p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </header>
 
-                        {/* Submit Button */}
-                        <div className="flex justify-end">
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-                            >
-                                <Save className="mr-2 h-4 w-4" />
-                                {processing ? t('Updating...') : t('Update Controller')}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                {/* Main Content */}
+                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {t('Edit Controller')}
+                        </h1>
+                        <p className="text-slate-600 text-lg">
+                            {t('Update control key, descriptive name, and active status for')} <span className="font-semibold text-vismass-blue">{control.conname}</span>
+                        </p>
+                    </div>
+
+                    {/* Form Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            {/* Controller Details */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-6">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <Database className="w-5 h-5 text-vismass-blue" />
+                                    </div>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Controller Details')}
+                                    </h2>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="conkey" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Database className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Control Key')} *
+                                        </Label>
+                                        <Input
+                                            id="conkey"
+                                            value={data.conkey}
+                                            onChange={(e) => setData('conkey', e.target.value.toUpperCase())}
+                                            required
+                                            className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                            placeholder="e.g., UNIT, CATEGORY"
+                                            maxLength={50}
+                                        />
+                                        <InputError message={errors.conkey} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="conname" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Code className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Control Name')} *
+                                        </Label>
+                                        <Input
+                                            id="conname"
+                                            value={data.conname}
+                                            onChange={(e) => setData('conname', e.target.value)}
+                                            required
+                                            className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                            placeholder="e.g., Units, Categories"
+                                            maxLength={100}
+                                        />
+                                        <InputError message={errors.conname} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <CheckCircle2 className="w-5 h-5 text-vismass-blue" />
+                                    </div>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Status')}
+                                    </h2>
+                                </div>
+
+                                <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <input
+                                        type="checkbox"
+                                        id="is_active"
+                                        checked={data.is_active}
+                                        onChange={(e) => setData('is_active', e.target.checked)}
+                                        className="h-4 w-4 rounded border-gray-300 text-vismass-blue focus:ring-vismass-blue"
+                                    />
+                                    <Label htmlFor="is_active" className="text-sm font-medium text-slate-700 cursor-pointer">
+                                        {t('Active Controller')} <span className="text-xs text-slate-500 font-normal ml-1">({t('Active controllers are available for code masters')})</span>
+                                    </Label>
+                                </div>
+                            </div>
+
+                            {/* Controller Metadata */}
+                            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
+                                <h4 className="mb-2 text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                    {t('Controller Information')}
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Control Code')}:</span>
+                                        <span className="ml-2 font-mono font-semibold text-slate-800">{control.concode}</span>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Created At')}:</span>
+                                        <span className="ml-2 text-slate-800">{new Date(control.created_at).toLocaleDateString('en-GB')}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Submit Buttons */}
+                            <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                                <Link
+                                    href={index().url}
+                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                >
+                                    {t('Cancel')}
+                                </Link>
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium"
+                                >
+                                    {processing ? (
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            <span>{t('Updating Controller...')}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center space-x-2">
+                                            <Save className="w-5 h-5" />
+                                            <span>{t('Update Controller')}</span>
+                                        </div>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Controller Master')} • v1.0.0</p>
+                    </div>
+                </main>
             </div>
         </AppLayout>
     );

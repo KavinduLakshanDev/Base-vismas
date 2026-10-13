@@ -1,14 +1,14 @@
-import AppLayout from '@/layouts/app-layout';
-import { t } from '@/lib/i18n';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { Code, Edit, Database, Save, ArrowLeft, Tag, CheckCircle } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { t } from '@/lib/i18n';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ArrowLeft, CheckCircle2, Code, Database, Edit2, Save, Tag } from 'lucide-react';
+import { FormEventHandler } from 'react';
 
 interface ControlMaster {
     id: number;
@@ -53,6 +53,7 @@ export default function EditCodeMaster({ code, controls }: Props) {
             href: '#',
         },
     ];
+
     const { data, setData, put, processing, errors } = useForm({
         conkey: code.conkey,
         cname: code.cname,
@@ -68,62 +69,71 @@ export default function EditCodeMaster({ code, controls }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit ${code.cname} - ${t('Code Master')}`} />
 
-            {/* Radiant Background */}
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-transparent to-blue-600/20"></div>
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-
-                <div className="relative z-10 p-6 max-w-4xl mx-auto">
-                    {/* Navigation */}
-                    <div className="mb-6">
-                        <Link
-                            href="/admin/code-master"
-                            className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>Back to Code Master</span>
-                        </Link>
-                    </div>
-
-                    {/* Enhanced Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4 shadow-lg shadow-blue-500/25">
-                            <Edit className="w-8 h-8 text-white" />
+            <div className="min-h-screen bg-slate-50">
+                {/* Header */}
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between py-6">
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    href="/admin/code-master"
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Edit2 className="h-7 w-7 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">
+                                        {t('Edit Code Master')}
+                                    </h1>
+                                    <p className="text-sm text-white/80">
+                                        {t('Update code:')} {code.cname}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
-                            Edit Code Master
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {t('Edit Code Master')}
                         </h1>
-                        <p className="text-blue-600/80 text-lg">
-                            Update information for <span className="font-semibold text-blue-700">{code.cname}</span>
+                        <p className="text-slate-600 text-lg">
+                            {t('Update controller, code description, and status for')} <span className="font-semibold text-vismass-blue">{code.cname}</span>
                         </p>
                     </div>
 
-                    {/* Form Container with Radiant Effects */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-200/50 p-8">
+                    {/* Form Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
                         <form onSubmit={submit} className="space-y-8">
-                            {/* Basic Information Section */}
+                            {/* Basic Information */}
                             <div className="space-y-6">
                                 <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Code className="w-5 h-5 text-blue-600" />
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <Code className="w-5 h-5 text-vismass-blue" />
                                     </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Basic Information</h2>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Basic Information')}
+                                    </h2>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="conkey" className="text-sm font-medium text-gray-700 flex items-center">
-                                            <Database className="w-4 h-4 mr-2 text-blue-500" />
-                                            Control Master *
+                                        <Label htmlFor="conkey" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Database className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Control Master')} *
                                         </Label>
                                         <Select
                                             value={data.conkey}
                                             onValueChange={(value) => setData('conkey', value)}
                                         >
-                                            <SelectTrigger className="border-blue-200 focus:border-blue-400 focus:ring-blue-400/20 bg-white/50 backdrop-blur-sm">
-                                                <SelectValue placeholder="Select control master" />
+                                            <SelectTrigger className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20">
+                                                <SelectValue placeholder={t('Select control master')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {controls
@@ -139,17 +149,18 @@ export default function EditCodeMaster({ code, controls }: Props) {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="cname" className="text-sm font-medium text-gray-700 flex items-center">
-                                            <Tag className="w-4 h-4 mr-2 text-blue-500" />
-                                            Code Name *
+                                        <Label htmlFor="cname" className="text-sm font-medium text-slate-700 flex items-center">
+                                            <Tag className="w-4 h-4 mr-2 text-vismass-blue" />
+                                            {t('Code Name')} *
                                         </Label>
                                         <Input
                                             id="cname"
                                             value={data.cname}
                                             onChange={(e) => setData('cname', e.target.value)}
                                             required
-                                            className="border-blue-200 focus:border-blue-400 focus:ring-blue-400/20 bg-white/50 backdrop-blur-sm"
+                                            className="border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
                                             placeholder="e.g., Electronics, Rice & Grains"
+                                            maxLength={100}
                                         />
                                         <InputError message={errors.cname} />
                                     </div>
@@ -158,80 +169,82 @@ export default function EditCodeMaster({ code, controls }: Props) {
 
                             {/* Status Section */}
                             <div className="space-y-6">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <CheckCircle className="w-5 h-5 text-blue-600" />
+                                <div className="flex items-center space-x-3 mb-4">
+                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                        <CheckCircle2 className="w-5 h-5 text-vismass-blue" />
                                     </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Status</h2>
+                                    <h2 className="text-xl font-semibold text-slate-800">
+                                        {t('Status')}
+                                    </h2>
                                 </div>
 
-                                <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                                     <input
                                         type="checkbox"
                                         id="is_active"
                                         checked={data.is_active}
                                         onChange={(e) => setData('is_active', e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 rounded border-gray-300 text-vismass-blue focus:ring-vismass-blue"
                                     />
-                                    <Label htmlFor="is_active" className="text-sm font-medium text-gray-700">
-                                        Active Code
+                                    <Label htmlFor="is_active" className="text-sm font-medium text-slate-700 cursor-pointer">
+                                        {t('Active Code')} <span className="text-xs text-slate-500 font-normal ml-1">({t('Active codes appear in selection menus')})</span>
                                     </Label>
                                 </div>
                             </div>
 
-                            {/* Code Information Section */}
-                            <div className="space-y-6">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Code className="w-5 h-5 text-blue-600" />
+                            {/* Code Information Metadata */}
+                            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
+                                <h4 className="mb-2 text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                                    {t('Code Information')}
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Code Key')}:</span>
+                                        <span className="ml-2 font-mono font-semibold text-vismass-blue">{code.catkey}</span>
                                     </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Code Information</h2>
-                                </div>
-
-                                <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/50">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <span className="font-medium text-blue-700">Code Key:</span>
-                                            <span className="ml-2 font-mono text-blue-800">{code.catkey}</span>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-blue-700">Created:</span>
-                                            <span className="ml-2 text-blue-800">
-                                                {new Date(code.created_at).toLocaleDateString('en-GB')}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-blue-700">Current Controller:</span>
-                                            <span className="ml-2 text-blue-800">
-                                                {code.controlMaster?.conname || t('Unknown')}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="font-medium text-blue-700">Control Key:</span>
-                                            <span className="ml-2 font-mono text-blue-800">
-                                                {code.controlMaster?.conkey || code.conkey}
-                                            </span>
-                                        </div>
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Created At')}:</span>
+                                        <span className="ml-2 text-slate-800">
+                                            {new Date(code.created_at).toLocaleDateString('en-GB')}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Current Controller')}:</span>
+                                        <span className="ml-2 text-slate-800">
+                                            {code.controlMaster?.conname || t('Unknown')}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-slate-600">{t('Control Key')}:</span>
+                                        <span className="ml-2 font-mono text-slate-800">
+                                            {code.controlMaster?.conkey || code.conkey}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
-                            <div className="flex justify-end pt-6 border-t border-blue-200/50">
+                            {/* Submit Buttons */}
+                            <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                                <Link
+                                    href="/admin/code-master"
+                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                >
+                                    {t('Cancel')}
+                                </Link>
                                 <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 font-medium"
+                                    className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium"
                                 >
                                     {processing ? (
                                         <div className="flex items-center space-x-2">
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                            <span>Updating Code...</span>
+                                            <span>{t('Updating Code...')}</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center space-x-2">
                                             <Save className="w-5 h-5" />
-                                            <span>Update Code Master</span>
+                                            <span>{t('Update Code Master')}</span>
                                         </div>
                                     )}
                                 </Button>
@@ -240,10 +253,10 @@ export default function EditCodeMaster({ code, controls }: Props) {
                     </div>
 
                     {/* Footer */}
-                    <div className="text-center mt-8 text-blue-600/60">
-                        <p className="text-sm">Keep your code master information up to date • Manage your system codes efficiently</p>
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Code Master')} • v1.0.0</p>
                     </div>
-                </div>
+                </main>
             </div>
         </AppLayout>
     );

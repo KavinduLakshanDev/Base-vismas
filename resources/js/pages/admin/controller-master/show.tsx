@@ -5,13 +5,13 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
-    Building,
     Calendar,
     Code,
     Database,
     Edit2,
     Eye,
     Tag,
+    CheckCircle2,
 } from 'lucide-react';
 
 interface ControlMaster {
@@ -54,86 +54,97 @@ export default function ShowControllerMaster({ control }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${control.conname} - ${t('Controller Master')}`} />
 
-            {/* Radiant Background */}
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-transparent to-blue-600/20"></div>
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-
-                <div className="relative z-10 p-6 max-w-4xl mx-auto">
-                    {/* Navigation */}
-                    <div className="mb-6">
-                        <Link
-                            href={index().url}
-                            className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>Back to Controller Master</span>
-                        </Link>
-                    </div>
-
-                    {/* Enhanced Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4 shadow-lg shadow-blue-500/25">
-                            <Eye className="w-8 h-8 text-white" />
+            <div className="min-h-screen bg-slate-50">
+                {/* Header */}
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between py-6">
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    href={index().url}
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Eye className="h-7 w-7 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">
+                                        {t('Controller Details')}
+                                    </h1>
+                                    <p className="text-sm text-white/80">
+                                        {t('Details for')} {control.conname}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
-                            {t('View Controller')}
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {control.conname}
                         </h1>
-                        <p className="text-blue-600/80 text-lg">
-                            {t('Details for')} <span className="font-semibold text-blue-700">{control.conname}</span>
+                        <p className="text-slate-600 text-lg">
+                            {t('Review system configuration, codes, and operational status')}
                         </p>
                     </div>
 
-                    {/* Content Container with Radiant Effects */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-200/50 p-8 space-y-8">
-                        {/* Basic Information Section */}
+                    {/* Card Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 space-y-8">
+                        {/* Basic Information */}
                         <div className="space-y-6">
                             <div className="flex items-center space-x-3 mb-6">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Code className="w-5 h-5 text-blue-600" />
+                                <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                    <Database className="w-5 h-5 text-vismass-blue" />
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">{t('Basic Information')}</h2>
+                                <h2 className="text-xl font-semibold text-slate-800">
+                                    {t('Basic Information')}
+                                </h2>
                             </div>
 
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Tag className="w-4 h-4 mr-2 text-blue-500" />
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Tag className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
                                         {t('Control Code')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="text-gray-900 font-medium">{control.concode}</p>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm font-semibold text-slate-900">{control.concode}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Database className="w-4 h-4 mr-2 text-blue-500" />
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Database className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
                                         {t('Control Key')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="text-gray-900 font-medium">{control.conkey}</p>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <span className="font-mono text-sm font-semibold text-vismass-blue">
+                                            {control.conkey}
+                                        </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Code className="w-4 h-4 mr-2 text-blue-500" />
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Code className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
                                         {t('Control Name')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="text-gray-900 font-medium">{control.conname}</p>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm font-semibold text-slate-900">{control.conname}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Eye className="w-4 h-4 mr-2 text-blue-500" />
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
                                         {t('Status')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                             control.is_active
                                                 ? 'bg-green-100 text-green-800'
@@ -146,54 +157,47 @@ export default function ShowControllerMaster({ control }: Props) {
                             </div>
                         </div>
 
-                        {/* Controller Information Section */}
-                        <div className="space-y-6">
-                            <div className="flex items-center space-x-3 mb-6">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Calendar className="w-5 h-5 text-blue-600" />
+                        {/* Metadata Box */}
+                        <div className="rounded-xl bg-slate-50 p-6 border border-slate-200">
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 text-vismass-blue" />
+                                {t('System Information')}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="font-medium text-slate-500">{t('Company Code')}:</span>
+                                    <span className="ml-2 font-mono font-medium text-slate-800">{control.company_code || t('Universal')}</span>
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">{t('Controller Information')}</h2>
-                            </div>
-
-                            <div className="bg-blue-50/50 rounded-lg p-6 border border-blue-200/50">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                                    <div>
-                                        <span className="font-medium text-blue-700">{t('Control Code')}:</span>
-                                        <span className="ml-2 font-mono text-blue-800">{control.concode}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">{t('Control Key')}:</span>
-                                        <span className="ml-2 font-mono text-blue-800">{control.conkey}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">{t('Status')}:</span>
-                                        <span className="ml-2 text-blue-800">{control.is_active ? t('Active') : t('Inactive')}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">{t('Created')}:</span>
-                                        <span className="ml-2 text-blue-800">{new Date(control.created_at).toLocaleDateString()}</span>
-                                    </div>
+                                <div>
+                                    <span className="font-medium text-slate-500">{t('Created At')}:</span>
+                                    <span className="ml-2 text-slate-800">{new Date(control.created_at).toLocaleDateString('en-GB')}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Action Button */}
-                        <div className="flex justify-end pt-6 border-t border-blue-200/50">
+                        {/* Actions */}
+                        <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
                             <Link
-                                href={edit({ controller_master: control.id }).url}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 font-medium inline-flex items-center space-x-2"
+                                href={index().url}
+                                className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
                             >
-                                <Edit2 className="w-5 h-5" />
+                                {t('Back to List')}
+                            </Link>
+                            <Link
+                                href={edit(control.id).url}
+                                className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center space-x-2"
+                            >
+                                <Edit2 className="w-4 h-4" />
                                 <span>{t('Edit Controller')}</span>
                             </Link>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="text-center mt-8 text-blue-600/60">
-                        <p className="text-sm">{t('View and manage your controller master details • Keep your system organized')}</p>
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Controller Master')} • v1.0.0</p>
                     </div>
-                </div>
+                </main>
             </div>
         </AppLayout>
     );

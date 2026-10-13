@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { t } from '@/lib/i18n';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Code, Database, Edit2, Eye, Tag, CheckCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle2, Code, Database, Edit2, Eye, Tag } from 'lucide-react';
 
 interface ControlMaster {
     id: number;
@@ -18,7 +18,6 @@ interface CodeMaster {
     concode: string;
     catkey: string;
     cname: string;
-
     is_active: boolean;
     created_at: string;
     controlMaster?: ControlMaster;
@@ -47,161 +46,162 @@ export default function ShowCodeMaster({ code }: Props) {
             href: '#',
         },
     ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${code.cname} - ${t('Code Master')}`} />
 
-            {/* Radiant Background */}
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 relative overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-transparent to-blue-600/20"></div>
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-300/30 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-
-                <div className="relative z-10 p-6 max-w-4xl mx-auto">
-                    {/* Navigation */}
-                    <div className="mb-6">
-                        <Link
-                            href="/admin/code-master"
-                            className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>Back to Code Master</span>
-                        </Link>
-                    </div>
-
-                    {/* Enhanced Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mb-4 shadow-lg shadow-blue-500/25">
-                            <Eye className="w-8 h-8 text-white" />
+            <div className="min-h-screen bg-slate-50">
+                {/* Header */}
+                <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between py-6">
+                            <div className="flex items-center space-x-4">
+                                <Link
+                                    href="/admin/code-master"
+                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                >
+                                    <ArrowLeft className="h-5 w-5 text-white" />
+                                </Link>
+                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                    <Eye className="h-7 w-7 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">
+                                        {t('Code Details')}
+                                    </h1>
+                                    <p className="text-sm text-white/80">
+                                        {t('Details for')} {code.cname}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
-                            View Code Master
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0 mb-6">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
+                            {code.cname}
                         </h1>
-                        <p className="text-blue-600/80 text-lg">
-                            Details for <span className="font-semibold text-blue-700">{code.cname}</span>
+                        <p className="text-slate-600 text-lg">
+                            {t('Review configuration, controller association, and code details')}
                         </p>
                     </div>
 
-                    {/* Content Container with Radiant Effects */}
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-blue-500/10 border border-blue-200/50 p-8 space-y-8">
-                        {/* Basic Information Section */}
+                    {/* Card Container */}
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 space-y-8">
+                        {/* Basic Information */}
                         <div className="space-y-6">
                             <div className="flex items-center space-x-3 mb-6">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Code className="w-5 h-5 text-blue-600" />
+                                <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                    <Code className="w-5 h-5 text-vismass-blue" />
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">Basic Information</h2>
+                                <h2 className="text-xl font-semibold text-slate-800">
+                                    {t('Basic Information')}
+                                </h2>
                             </div>
 
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Database className="w-4 h-4 mr-2 text-blue-500" />
-                                        Control Master
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Database className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Control Master')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="text-gray-900 font-medium">
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm font-semibold text-slate-900">
                                             {code.controlMaster?.conname || t('Unknown Controller')}
                                         </p>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-xs font-mono text-vismass-blue mt-0.5">
                                             {code.controlMaster?.conkey || code.conkey}
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Tag className="w-4 h-4 mr-2 text-blue-500" />
-                                        Code Name
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Tag className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Code Name')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="text-gray-900 font-medium">{code.cname}</p>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <p className="text-sm font-semibold text-slate-900">{code.cname}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <Code className="w-4 h-4 mr-2 text-blue-500" />
-                                        Code Key
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <Code className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Code Key')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                        <p className="font-mono text-gray-900 font-medium">{code.catkey}</p>
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                        <span className="font-mono text-sm font-semibold text-vismass-blue">
+                                            {code.catkey}
+                                        </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 flex items-center">
-                                        <CheckCircle className="w-4 h-4 mr-2 text-blue-500" />
-                                        Status
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
+                                        <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-vismass-blue" />
+                                        {t('Status')}
                                     </label>
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                             code.is_active
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-red-100 text-red-800'
                                         }`}>
-                                            {code.is_active ? 'Active' : 'Inactive'}
+                                            {code.is_active ? t('Active') : t('Inactive')}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Code Information Section */}
-                        <div className="space-y-6">
-                            <div className="flex items-center space-x-3 mb-6">
-                                <div className="p-2 bg-blue-100 rounded-lg">
-                                    <Calendar className="w-5 h-5 text-blue-600" />
+                        {/* Metadata Box */}
+                        <div className="rounded-xl bg-slate-50 p-6 border border-slate-200">
+                            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider mb-4 flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 text-vismass-blue" />
+                                {t('System Information')}
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="font-medium text-slate-500">{t('Parent Key')}:</span>
+                                    <span className="ml-2 font-mono font-medium text-slate-800">{code.conkey}</span>
                                 </div>
-                                <h2 className="text-xl font-semibold text-gray-800">Code Information</h2>
-                            </div>
-
-                            <div className="bg-blue-50/50 rounded-lg p-6 border border-blue-200/50">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                                    <div>
-                                        <span className="font-medium text-blue-700">Code Key:</span>
-                                        <span className="ml-2 font-mono text-blue-800">{code.catkey}</span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Created:</span>
-                                        <span className="ml-2 text-blue-800">
-                                            {new Date(code.created_at).toLocaleDateString('en-GB')}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Current Controller:</span>
-                                        <span className="ml-2 text-blue-800">
-                                            {code.controlMaster?.conname || t('Unknown')}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <span className="font-medium text-blue-700">Control Key:</span>
-                                        <span className="ml-2 font-mono text-blue-800">
-                                            {code.controlMaster?.conkey || code.conkey}
-                                        </span>
-                                    </div>
+                                <div>
+                                    <span className="font-medium text-slate-500">{t('Created At')}:</span>
+                                    <span className="ml-2 text-slate-800">
+                                        {new Date(code.created_at).toLocaleDateString('en-GB')}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Action Button */}
-                        <div className="flex justify-end pt-6 border-t border-blue-200/50">
+                        {/* Actions */}
+                        <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
+                            <Link
+                                href="/admin/code-master"
+                                className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                            >
+                                {t('Back to List')}
+                            </Link>
                             <Link
                                 href={`/admin/code-master/${code.id}/edit`}
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 font-medium inline-flex items-center space-x-2"
+                                className="bg-vismass-blue hover:bg-vismass-blue/90 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center space-x-2"
                             >
-                                <Edit2 className="w-5 h-5" />
-                                <span>Edit Code Master</span>
+                                <Edit2 className="w-4 h-4" />
+                                <span>{t('Edit Code Master')}</span>
                             </Link>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="text-center mt-8 text-blue-600/60">
-                        <p className="text-sm">View and manage your code master details • Keep your system organized</p>
+                    <div className="text-center mt-8 text-slate-600">
+                        <p className="text-sm">VISMASS POS System • {t('Code Master')} • v1.0.0</p>
                     </div>
-                </div>
+                </main>
             </div>
         </AppLayout>
     );
