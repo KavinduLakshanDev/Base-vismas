@@ -43,14 +43,17 @@ export default function EditSection({ section }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={[
-            { title: 'Sections', href: '/sections' },
-            { title: section.name, href: `/sections/${section.id}` },
-            { title: 'Edit', href: `/sections/${section.id}/edit` }
-        ]}>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Sections', href: '/sections' },
+                { title: section.name, href: `/sections/${section.id}` },
+                { title: 'Edit', href: `/sections/${section.id}/edit` }
+            ]}
+            footerModuleName="Section Management"
+        >
             <Head title={`Edit ${section.name}`} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -175,10 +178,6 @@ export default function EditSection({ section }: Props) {
                             </form>
                         </div>
 
-                        {/* Footer */}
-                        <div className="text-center mt-8 text-slate-600">
-                            <p className="text-sm">Keep your section information up to date • Manage your distribution network efficiently</p>
-                        </div>
                     </div>
                 </main>
             </div>

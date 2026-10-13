@@ -57,13 +57,16 @@ export default function ShowSection({ section }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={[
-            { title: 'Sections', href: '/sections' },
-            { title: section.name, href: `/sections/${section.id}` }
-        ]}>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Sections', href: '/sections' },
+                { title: section.name, href: `/sections/${section.id}` }
+            ]}
+            footerModuleName="Section Management"
+        >
             <Head title={section.name} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -102,149 +105,144 @@ export default function ShowSection({ section }: Props) {
                 <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
                     <div className="px-4 sm:px-0">
 
-                    {/* Main Content Container */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Information Card */}
-                        <div className="lg:col-span-2 space-y-6">
-                            {/* Basic Information */}
-                            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-vismass-blue/10 rounded-lg">
-                                        <Building2 className="w-5 h-5 text-vismass-blue" />
-                                    </div>
-                                    <h2 className="text-xl font-semibold text-slate-800">Basic Information</h2>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                        <div className="flex items-center space-x-3">
-                                            <Tag className="w-4 h-4 text-vismass-blue" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Section Code</p>
-                                                <p className="font-medium text-slate-800">{section.section_code}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-3">
-                                            <Building2 className="w-4 h-4 text-vismass-blue" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Section Name</p>
-                                                <p className="font-medium text-slate-800">{section.name}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-3">
-                                            <span className="text-lg">{getSectionTypeIcon(section.section_type)}</span>
-                                            <div>
-                                                <p className="text-sm text-slate-500">Type</p>
-                                                <p className="font-medium text-slate-800 capitalize">{section.section_type}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <div className="flex items-center space-x-3">
-                                            <Calendar className="w-4 h-4 text-vismass-blue" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Created</p>
-                                                <p className="font-medium text-slate-800">{formatDate(section.created_at)}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-3">
-                                            <Calendar className="w-4 h-4 text-vismass-blue" />
-                                            <div>
-                                                <p className="text-sm text-slate-500">Updated</p>
-                                                <p className="font-medium text-slate-800">{formatDate(section.updated_at)}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-3">
-                                            <div className={`w-3 h-3 rounded-full ${section.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                            <div>
-                                                <p className="text-sm text-slate-500">Status</p>
-                                                <p className="font-medium text-slate-800">{section.is_active ? 'Active' : 'Inactive'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Address Information */}
-                            {(section.address || section.city || section.state || section.country) && (
+                        {/* Main Content Container */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Main Information Card */}
+                            <div className="lg:col-span-2 space-y-6">
+                                {/* Basic Information */}
                                 <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
                                     <div className="flex items-center space-x-3 mb-6">
                                         <div className="p-2 bg-vismass-blue/10 rounded-lg">
-                                            <MapPin className="w-5 h-5 text-vismass-blue" />
+                                            <Building2 className="w-5 h-5 text-vismass-blue" />
                                         </div>
-                                        <h2 className="text-xl font-semibold text-slate-800">Address Information</h2>
+                                        <h2 className="text-xl font-semibold text-slate-800">Basic Information</h2>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        {section.address && (
-                                            <div className="flex items-start space-x-3">
-                                                <MapPin className="w-4 h-4 text-vismass-blue mt-1" />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <div className="flex items-center space-x-3">
+                                                <Tag className="w-4 h-4 text-vismass-blue" />
                                                 <div>
-                                                    <p className="text-sm text-slate-500">Address</p>
-                                                    <p className="font-medium text-slate-800">{section.address}</p>
+                                                    <p className="text-sm text-slate-500">Section Code</p>
+                                                    <p className="font-medium text-slate-800">{section.section_code}</p>
                                                 </div>
                                             </div>
-                                        )}
-
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ml-7">
-                                            {section.city && (
+                                            <div className="flex items-center space-x-3">
+                                                <Building2 className="w-4 h-4 text-vismass-blue" />
                                                 <div>
-                                                    <p className="text-sm text-slate-500">City</p>
-                                                    <p className="font-medium text-slate-800">{section.city}</p>
+                                                    <p className="text-sm text-slate-500">Section Name</p>
+                                                    <p className="font-medium text-slate-800">{section.name}</p>
                                                 </div>
-                                            )}
-                                            {section.state && (
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <span className="text-lg">{getSectionTypeIcon(section.section_type)}</span>
                                                 <div>
-                                                    <p className="text-sm text-slate-500">State</p>
-                                                    <p className="font-medium text-slate-800">{section.state}</p>
+                                                    <p className="text-sm text-slate-500">Type</p>
+                                                    <p className="font-medium text-slate-800 capitalize">{section.section_type}</p>
                                                 </div>
-                                            )}
-                                            {section.country && (
-                                                <div>
-                                                    <p className="text-sm text-slate-500">Country</p>
-                                                    <p className="font-medium text-slate-800">{section.country}</p>
-                                                </div>
-                                            )}
+                                            </div>
                                         </div>
 
-                                        {section.postal_code && (
-                                            <div className="flex items-start space-x-3 ml-7">
-                                                <div className="w-4 h-4"></div>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center space-x-3">
+                                                <Calendar className="w-4 h-4 text-vismass-blue" />
                                                 <div>
-                                                    <p className="text-sm text-slate-500">Postal Code</p>
-                                                    <p className="font-medium text-slate-800">{section.postal_code}</p>
+                                                    <p className="text-sm text-slate-500">Created</p>
+                                                    <p className="font-medium text-slate-800">{formatDate(section.created_at)}</p>
                                                 </div>
                                             </div>
-                                        )}
+                                            <div className="flex items-center space-x-3">
+                                                <Calendar className="w-4 h-4 text-vismass-blue" />
+                                                <div>
+                                                    <p className="text-sm text-slate-500">Updated</p>
+                                                    <p className="font-medium text-slate-800">{formatDate(section.updated_at)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-3">
+                                                <div className={`w-3 h-3 rounded-full ${section.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                                                <div>
+                                                    <p className="text-sm text-slate-500">Status</p>
+                                                    <p className="font-medium text-slate-800">{section.is_active ? 'Active' : 'Inactive'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Contact Information Sidebar */}
-                        <div className="space-y-6">
-                            {/* Actions Card */}
-                            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
-                                <h2 className="text-xl font-semibold text-slate-800 mb-4">Actions</h2>
-                                <div className="space-y-3">
-                                    <Link
-                                        href={`/sections/${section.id}/edit`}
-                                        className="w-full bg-vismass-blue hover:bg-vismass-blue/90 text-white px-4 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center justify-center space-x-2"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                        <span>Edit Section</span>
-                                    </Link>
+                                {/* Address Information */}
+                                {(section.address || section.city || section.state || section.country) && (
+                                    <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+                                        <div className="flex items-center space-x-3 mb-6">
+                                            <div className="p-2 bg-vismass-blue/10 rounded-lg">
+                                                <MapPin className="w-5 h-5 text-vismass-blue" />
+                                            </div>
+                                            <h2 className="text-xl font-semibold text-slate-800">Address Information</h2>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {section.address && (
+                                                <div className="flex items-start space-x-3">
+                                                    <MapPin className="w-4 h-4 text-vismass-blue mt-1" />
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Address</p>
+                                                        <p className="font-medium text-slate-800">{section.address}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ml-7">
+                                                {section.city && (
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">City</p>
+                                                        <p className="font-medium text-slate-800">{section.city}</p>
+                                                    </div>
+                                                )}
+                                                {section.state && (
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">State</p>
+                                                        <p className="font-medium text-slate-800">{section.state}</p>
+                                                    </div>
+                                                )}
+                                                {section.country && (
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Country</p>
+                                                        <p className="font-medium text-slate-800">{section.country}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {section.postal_code && (
+                                                <div className="flex items-start space-x-3 ml-7">
+                                                    <div className="w-4 h-4"></div>
+                                                    <div>
+                                                        <p className="text-sm text-slate-500">Postal Code</p>
+                                                        <p className="font-medium text-slate-800">{section.postal_code}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Contact Information Sidebar */}
+                            <div className="space-y-6">
+                                {/* Actions Card */}
+                                <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+                                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Actions</h2>
+                                    <div className="space-y-3">
+                                        <Link
+                                            href={`/sections/${section.id}/edit`}
+                                            className="w-full bg-vismass-blue hover:bg-vismass-blue/90 text-white px-4 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center justify-center space-x-2"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                            <span>Edit Section</span>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Footer */}
-                    <div className="text-center mt-12 text-slate-600">
-                        <p className="text-sm">Section details • Part of your distribution network</p>
-                    </div>
-                </div>
                 </main>
             </div>
         </AppLayout>

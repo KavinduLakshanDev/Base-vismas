@@ -192,8 +192,8 @@ export default function CompanyProfile({ company }: Props) {
     };
 
     return (
-        <AppSidebarLayout breadcrumbs={breadcrumbs}>
-            <div className="min-h-screen bg-slate-50">
+        <AppSidebarLayout breadcrumbs={breadcrumbs} footerModuleName="Company Profile">
+            <div className="flex-1 bg-slate-50">
                 <Head title="Company Profile" />
 
                 {/* Header */}
@@ -718,12 +718,8 @@ export default function CompanyProfile({ company }: Props) {
                         </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 text-slate-600">
-                        <p className="text-sm">Company Profile Management • Keep your business information up to date</p>
-                    </div>
                 </main>
-            </div >
+            </div>
         </AppSidebarLayout >
     );
 }

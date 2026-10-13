@@ -21,13 +21,16 @@ export default function CreateSection() {
     };
 
     return (
-        <AppLayout breadcrumbs={[
-            { title: 'Sections', href: '/sections' },
-            { title: 'Create Section', href: '/sections/create' }
-        ]}>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Sections', href: '/sections' },
+                { title: 'Create Section', href: '/sections/create' }
+            ]}
+            footerModuleName="Section Management"
+        >
             <Head title="Create Section" />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -160,10 +163,6 @@ export default function CreateSection() {
                         </form>
                     </div>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 text-slate-600">
-                        <p className="text-sm">Build your distribution network • Manage your locations efficiently</p>
-                    </div>
                 </main>
             </div>
         </AppLayout>

@@ -66,10 +66,10 @@ export default function EditCodeMaster({ code, controls }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} footerModuleName="Code Master">
             <Head title={`Edit ${code.cname} - ${t('Code Master')}`} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -252,10 +252,6 @@ export default function EditCodeMaster({ code, controls }: Props) {
                         </form>
                     </div>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 text-slate-600">
-                        <p className="text-sm">VISMASS POS System • {t('Code Master')} • v1.0.0</p>
-                    </div>
                 </main>
             </div>
         </AppLayout>

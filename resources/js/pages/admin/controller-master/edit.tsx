@@ -58,10 +58,10 @@ export default function EditControllerMaster({ control }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} footerModuleName="Controller Master">
             <Head title={`${t('Edit')} ${control.conname} - ${t('Controller Master')}`} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -222,10 +222,6 @@ export default function EditControllerMaster({ control }: Props) {
                         </form>
                     </div>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 text-slate-600">
-                        <p className="text-sm">VISMASS POS System • {t('Controller Master')} • v1.0.0</p>
-                    </div>
                 </main>
             </div>
         </AppLayout>

@@ -144,10 +144,10 @@ export default function Create({ permissions, companies, sections }: Props) {
     }, [data.permissions, filteredPermissions]);
 
     return (
-        <AppLayout>
+        <AppLayout footerModuleName="Roles Management">
             <Head title={t('Create Role')} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -460,10 +460,6 @@ export default function Create({ permissions, companies, sections }: Props) {
                         </form>
                     </div>
 
-                    {/* Footer */}
-                    <div className="text-center mt-8 text-slate-600">
-                        <p className="text-sm">VISMASS POS System • {t('Roles Management')} • v1.0.0</p>
-                    </div>
                 </main>
             </div>
         </AppLayout>

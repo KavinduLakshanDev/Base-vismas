@@ -56,10 +56,10 @@ export default function SectionIndex({ sections }: { sections: any[] }) {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} footerModuleName="Section Management">
             <Head title={t('Sections')} />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="flex-1 bg-slate-50">
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -322,15 +322,6 @@ export default function SectionIndex({ sections }: { sections: any[] }) {
                         </div>
                     </div>
                 </main>
-
-                {/* Footer */}
-                <footer className="mt-6 border-t border-sky-200 bg-gradient-to-r from-white to-sky-50">
-                    <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-                        <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2">
-                            <p className="text-xs text-gray-500">© VISMASS POS System • {t('Section Management')} • v1.0.0</p>
-                        </div>
-                    </div>
-                </footer>
             </div>
         </AppLayout>
     );
