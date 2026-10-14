@@ -26,7 +26,7 @@ interface Role {
     name: string;
     slug: string;
     description?: string;
-    level: 'super_admin' | 'company_admin' | 'user';
+    level: 'company_admin' | 'user';
     company?: {
         id: number;
         name: string;
@@ -70,13 +70,15 @@ export default function Index({ roles, filters, success, error }: Props) {
     const [isDeleting, setIsDeleting] = useState(false);
     const { hasPermission } = usePermission();
 
-    const { auth } = usePage().props as any;
+    const { auth, flash } = usePage().props as any;
     const currentUserType = auth?.user?.user_type;
 
     React.useEffect(() => {
-        if (success) toast.success(success);
-        if (error) toast.error(error);
-    }, [success, error]);
+        const msgSuccess = success || flash?.success;
+        const msgError = error || flash?.error;
+        if (msgSuccess) toast.success(msgSuccess);
+        if (msgError) toast.error(msgError);
+    }, [success, error, flash?.success, flash?.error]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -297,7 +299,7 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                     className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
                                                 >
                                                     <option value="all">{t('All Levels')}</option>
-                                                    <option value="super_admin">{t('Super Admin')}</option>
+                                                    {/* <option value="super_admin">{t('Super Admin')}</option> */}
                                                     <option value="company_admin">{t('Company Admin')}</option>
                                                     <option value="user">{t('User')}</option>
                                                 </select>
@@ -336,12 +338,12 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
                                                         {t('Level')}
                                                     </th>
-                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                    {/* <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
                                                         {t('Scope')}
                                                     </th>
                                                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
                                                         {t('Type')}
-                                                    </th>
+                                                    </th> */}
                                                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
                                                         {t('Permissions')}
                                                     </th>
@@ -369,7 +371,7 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                                 {formatLevel(role.level)}
                                                             </span>
                                                         </td>
-                                                        <td className="px-4 py-2.5 whitespace-nowrap text-xs text-gray-600">
+                                                        {/* <td className="px-4 py-2.5 whitespace-nowrap text-xs text-gray-600">
                                                             {role.company ? (
                                                                 <div>
                                                                     <div className="font-medium text-gray-900">{role.company.name}</div>
@@ -380,8 +382,8 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                             ) : (
                                                                 <span className="text-xs text-slate-500 font-medium">{t('System Wide')}</span>
                                                             )}
-                                                        </td>
-                                                        <td className="px-4 py-2.5 whitespace-nowrap text-xs">
+                                                        </td> */}
+                                                        {/* <td className="px-4 py-2.5 whitespace-nowrap text-xs">
                                                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                                                                 role.is_system_role
                                                                     ? 'bg-purple-100 text-purple-800'
@@ -389,7 +391,7 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                             }`}>
                                                                 {role.is_system_role ? t('System') : t('Custom')}
                                                             </span>
-                                                        </td>
+                                                        </td> */}
                                                         <td className="px-4 py-2.5 text-xs text-gray-600 max-w-xs">
                                                             {role.permissions && role.permissions.length > 0 ? (
                                                                 <div className="flex flex-wrap gap-1">
@@ -427,15 +429,17 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                                         {t('View')}
                                                                     </Link>
                                                                 )}
-                                                                {hasPermission('roles.edit') && (
-                                                                    <Link
-                                                                        href={route('roles.edit', role.id)}
-                                                                        className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                                                                    >
-                                                                        <Edit2 className="mr-1 h-3.5 w-3.5" />
-                                                                        {t('Edit')}
-                                                                    </Link>
-                                                                )}
+                                                                {hasPermission('roles.edit') &&
+                                                                    (role.slug !== 'super_admin' ||
+                                                                        currentUserType === 'super_admin') && (
+                                                                        <Link
+                                                                            href={route('roles.edit', role.id)}
+                                                                            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+                                                                        >
+                                                                            <Edit2 className="mr-1 h-3.5 w-3.5" />
+                                                                            {t('Edit')}
+                                                                        </Link>
+                                                                    )}
                                                                 {hasPermission('roles.delete') &&
                                                                     (!role.is_system_role ||
                                                                         (role.is_system_role &&

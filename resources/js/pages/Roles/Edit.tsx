@@ -77,10 +77,15 @@ export default function Edit({
     sections,
     selectedPermissions,
 }: Props) {
-    const { auth } = usePage<any>().props;
+    const { auth, flash } = usePage<any>().props;
     const isSuperAdmin = auth?.user?.user_type === 'super_admin' || auth?.user?.role?.level === 'super_admin';
     const [permissionSearch, setPermissionSearch] = useState('');
     const [selectedAll, setSelectedAll] = useState(false);
+
+    React.useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
+    }, [flash?.success, flash?.error]);
 
     const { data, setData, put, processing, errors } = useForm<FormData>({
         name: role.name,
@@ -227,7 +232,8 @@ export default function Edit({
                                                 value={data.slug}
                                                 onChange={(e) => setData('slug', e.target.value)}
                                                 required
-                                                className="font-mono border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20"
+                                                disabled={role.is_system_role}
+                                                className="font-mono border-slate-200 focus:border-vismass-blue focus:ring-vismass-blue/20 disabled:bg-slate-50 disabled:text-slate-500"
                                                 placeholder="e.g., store_manager"
                                             />
                                             <InputError message={errors.slug} />

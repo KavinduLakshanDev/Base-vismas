@@ -219,7 +219,7 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified role.
      */
-    public function edit(Role $role): Response
+    public function edit(Role $role): Response|RedirectResponse
     {
         $user = Auth::user();
         $activeCompanyCode = session('active_company_code', $user?->company_code);
@@ -229,8 +229,8 @@ class RoleController extends Controller
         }
 
         $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
-        if ($role->is_system_role && !$isSuperAdmin) {
-            return redirect()->back()->with('error', 'System roles can only be edited by super admins.');
+        if ($role->slug === 'super_admin' && !$isSuperAdmin) {
+            return redirect()->route('roles.index')->with('error', 'Super Admin role can only be edited by super admins.');
         }
 
         $permissions = $this->getFilteredPermissions();
@@ -256,8 +256,8 @@ class RoleController extends Controller
         $user = Auth::user();
         $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
 
-        if ($role->is_system_role && !$isSuperAdmin) {
-            return redirect()->back()->with('error', 'System roles can only be edited by super admins.');
+        if ($role->slug === 'super_admin' && !$isSuperAdmin) {
+            return redirect()->back()->with('error', 'Super Admin role can only be edited by super admins.');
         }
 
         $activeCompanyCode = session('active_company_code', $user?->company_code);
@@ -288,6 +288,11 @@ class RoleController extends Controller
             return redirect()->back()
                 ->withErrors(['level' => 'You do not have permission to assign Super Admin level.'])
                 ->withInput();
+        }
+
+        if ($role->is_system_role && !$isSuperAdmin) {
+            $data['slug'] = $role->slug;
+            $data['level'] = $role->level;
         }
 
         if (empty($data['slug'])) {

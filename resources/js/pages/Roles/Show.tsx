@@ -1,4 +1,3 @@
-import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -10,7 +9,6 @@ import {
     Users,
     Key,
     Code,
-    Calendar,
     FileText,
 } from 'lucide-react';
 import { t } from '@/lib/i18n';
@@ -82,15 +80,15 @@ export default function Show({ role }: Props) {
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between py-6">
-                            <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-between py-4">
+                            <div className="flex items-center space-x-3">
                                 <Link
                                     href={route('roles.index')}
-                                    className="rounded-xl bg-white/20 p-3 hover:bg-white/30 transition-all duration-200"
+                                    className="rounded-xl bg-white/20 p-2 hover:bg-white/30 transition-all duration-200"
                                 >
                                     <ArrowLeft className="h-5 w-5 text-white" />
                                 </Link>
-                                <div className="rounded-xl bg-white/20 p-3 shadow-lg">
+                                <div className="rounded-xl bg-white/20 p-2 shadow-lg">
                                     <Shield className="h-7 w-7 text-white" />
                                 </div>
                                 <div>
@@ -107,15 +105,15 @@ export default function Show({ role }: Props) {
                 </header>
 
                 {/* Main Content */}
-                <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0 mb-6">
+                <main className="mx-auto max-w-7xl py-4 sm:px-6 lg:px-8">
+                    {/* <div className="px-4 sm:px-0 mb-6">
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
                             {role.name}
                         </h1>
                         <p className="text-slate-600 text-lg">
                             {t('Review access tier, capabilities, and assigned team members')}
                         </p>
-                    </div>
+                    </div> */}
 
                     {/* Card Container */}
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 space-y-8">
