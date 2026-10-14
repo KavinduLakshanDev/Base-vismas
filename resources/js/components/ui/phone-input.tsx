@@ -31,7 +31,7 @@ export function PhoneInputComponent({
     const { t } = useTranslation();
     return (
         <div>
-            {label && <Label htmlFor={id} required={required}>{label}</Label>}
+            {label && <Label htmlFor={id}>{label}{required && <span className="text-destructive ml-1">*</span>}</Label>}
             <Input
                 id={id}
                 type="tel"

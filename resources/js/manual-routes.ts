@@ -1,5 +1,4 @@
 import * as autoRoutes from './routes';
-import admin from './routes/admin';
 import api from './routes/api';
 import appearance from './routes/appearance';
 import company from './routes/company';
@@ -22,7 +21,6 @@ import verification from './routes/verification';
 
 const routes = {
     ...autoRoutes,
-    admin,
     api,
     appearance,
     company,

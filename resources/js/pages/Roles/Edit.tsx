@@ -30,6 +30,7 @@ interface Permission {
 interface Company {
     id: number;
     name: string;
+    company_code?: string;
 }
 
 interface Section {

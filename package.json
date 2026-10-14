@@ -70,7 +70,6 @@
         "@tiptap/pm": "^3.32.0",
         "@tiptap/react": "^3.32.0",
         "@tiptap/starter-kit": "^3.32.0",
-        "@types/date-fns": "^2.5.3",
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "axios": "^1.13.2",

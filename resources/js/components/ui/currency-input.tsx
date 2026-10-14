@@ -68,7 +68,7 @@ export function CurrencyInput({
 
     return (
         <div>
-            {label && <Label htmlFor={id} required={required}>{label}</Label>}
+            {label && <Label htmlFor={id}>{label}{required && <span className="text-destructive ml-1">*</span>}</Label>}
             <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
                     {currencySymbol}

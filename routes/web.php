@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Admin\CodeMasterController;
-use App\Http\Controllers\Admin\ControllerMasterController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyProfileController;
@@ -77,8 +75,7 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::post('sections', [SectionController::class, 'store'])->middleware('permission:create-sections')->name('sections.store');
         Route::get('sections/{section}', [SectionController::class, 'show'])->middleware('permission:view-sections')->name('sections.show');
         Route::get('sections/{section}/edit', [SectionController::class, 'edit'])->middleware('permission:edit-sections')->name('sections.edit');
-        Route::put('sections/{section}', [SectionController::class, 'update'])->middleware('permission:edit-sections')->name('sections.update');
-        Route::patch('sections/{section}', [SectionController::class, 'update'])->middleware('permission:edit-sections');
+        Route::match(['put', 'patch'], 'sections/{section}', [SectionController::class, 'update'])->middleware('permission:edit-sections')->name('sections.update');
         Route::delete('sections/{section}', [SectionController::class, 'destroy'])->middleware('permission:delete-sections')->name('sections.destroy');
     });
 
@@ -90,37 +87,9 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::post('users', [UserController::class, 'store'])->middleware('permission:create-users')->name('users.store');
         Route::get('users/{user}', [UserController::class, 'show'])->middleware('permission:view-users')->name('users.show');
         Route::get('users/{user}/edit', [UserController::class, 'edit'])->middleware('permission:edit-users')->name('users.edit');
-        Route::put('users/{user}', [UserController::class, 'update'])->middleware('permission:edit-users')->name('users.update');
-        Route::patch('users/{user}', [UserController::class, 'update'])->middleware('permission:edit-users');
+        Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update'])->middleware('permission:edit-users')->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->middleware('permission:delete-users')->name('users.destroy');
         Route::post('users/{user}/toggle', [UserController::class, 'toggle'])->middleware('permission:edit-users')->name('users.toggle');
-    });
-
-    // Admin routes with granular permissions
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::middleware('permission:manage-controller-master')->group(function () {
-            Route::get('controller-master', [ControllerMasterController::class, 'index'])->middleware('permission:manage-controller-master')->name('controller-master.index');
-            Route::get('controller-master/create', [ControllerMasterController::class, 'create'])->middleware('permission:create-controller-master')->name('controller-master.create');
-            Route::post('controller-master', [ControllerMasterController::class, 'store'])->middleware('permission:create-controller-master')->name('controller-master.store');
-            Route::get('controller-master/{controlMaster}', [ControllerMasterController::class, 'show'])->middleware('permission:view-controller-master')->name('controller-master.show');
-            Route::get('controller-master/{controlMaster}/edit', [ControllerMasterController::class, 'edit'])->middleware('permission:edit-controller-master')->name('controller-master.edit');
-            Route::put('controller-master/{controlMaster}', [ControllerMasterController::class, 'update'])->middleware('permission:edit-controller-master')->name('controller-master.update');
-            Route::patch('controller-master/{controlMaster}', [ControllerMasterController::class, 'update'])->middleware('permission:edit-controller-master');
-            Route::delete('controller-master/{controlMaster}', [ControllerMasterController::class, 'destroy'])->middleware('permission:delete-controller-master')->name('controller-master.destroy');
-            Route::post('controller-master/{controlMaster}/toggle', [ControllerMasterController::class, 'toggle'])->middleware('permission:edit-controller-master')->name('controller-master.toggle');
-        });
-        
-        Route::middleware('permission:manage-code-master')->group(function () {
-            Route::get('code-master', [CodeMasterController::class, 'index'])->middleware('permission:manage-code-master')->name('code-master.index');
-            Route::get('code-master/create', [CodeMasterController::class, 'create'])->middleware('permission:create-code-master')->name('code-master.create');
-            Route::post('code-master', [CodeMasterController::class, 'store'])->middleware('permission:create-code-master')->name('code-master.store');
-            Route::get('code-master/{codeMaster}', [CodeMasterController::class, 'show'])->middleware('permission:view-code-master')->name('code-master.show');
-            Route::get('code-master/{codeMaster}/edit', [CodeMasterController::class, 'edit'])->middleware('permission:edit-code-master')->name('code-master.edit');
-            Route::put('code-master/{codeMaster}', [CodeMasterController::class, 'update'])->middleware('permission:edit-code-master')->name('code-master.update');
-            Route::patch('code-master/{codeMaster}', [CodeMasterController::class, 'update'])->middleware('permission:edit-code-master');
-            Route::delete('code-master/{codeMaster}', [CodeMasterController::class, 'destroy'])->middleware('permission:delete-code-master')->name('code-master.destroy');
-            Route::post('code-master/{codeMaster}/toggle', [CodeMasterController::class, 'toggle'])->middleware('permission:edit-code-master')->name('code-master.toggle');
-        });
     });
 
     // Roles routes with granular permissions
@@ -130,8 +99,7 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::post('roles', [RoleController::class, 'store'])->middleware('permission:create-roles')->name('roles.store');
         Route::get('roles/{role}', [RoleController::class, 'show'])->middleware('permission:view-roles')->name('roles.show');
         Route::get('roles/{role}/edit', [RoleController::class, 'edit'])->middleware('permission:edit-roles')->name('roles.edit');
-        Route::put('roles/{role}', [RoleController::class, 'update'])->middleware('permission:edit-roles')->name('roles.update');
-        Route::patch('roles/{role}', [RoleController::class, 'update'])->middleware('permission:edit-roles');
+        Route::match(['put', 'patch'], 'roles/{role}', [RoleController::class, 'update'])->middleware('permission:edit-roles')->name('roles.update');
         Route::delete('roles/{role}', [RoleController::class, 'destroy'])->middleware('permission:delete-roles')->name('roles.destroy');
     });
 
@@ -142,8 +110,7 @@ Route::middleware(['auth:web,company'])->group(function () {
         Route::post('permissions', [PermissionController::class, 'store'])->middleware('permission:create-permissions')->name('permissions.store');
         Route::get('permissions/{permission}', [PermissionController::class, 'show'])->middleware('permission:view-permissions')->name('permissions.show');
         Route::get('permissions/{permission}/edit', [PermissionController::class, 'edit'])->middleware('permission:edit-permissions')->name('permissions.edit');
-        Route::put('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:edit-permissions')->name('permissions.update');
-        Route::patch('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:edit-permissions');
+        Route::match(['put', 'patch'], 'permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:edit-permissions')->name('permissions.update');
         Route::delete('permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:delete-permissions')->name('permissions.destroy');
     });
 

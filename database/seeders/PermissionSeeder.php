@@ -58,18 +58,6 @@ class PermissionSeeder extends Seeder
             ['name' => 'view-settings', 'module' => 'settings', 'label' => 'View Settings', 'description' => 'Can view system settings'],
             ['name' => 'edit-settings', 'module' => 'settings', 'label' => 'Edit Settings', 'description' => 'Can modify system settings'],
 
-            // Admin Master Data
-            ['name' => 'manage-controller-master', 'module' => 'admin', 'label' => 'Manage Controller Master', 'description' => 'Can manage controller master settings'],
-            ['name' => 'view-controller-master', 'module' => 'admin', 'label' => 'View Controller Master', 'description' => 'Can view controller master settings'],
-            ['name' => 'create-controller-master', 'module' => 'admin', 'label' => 'Create Controller Master', 'description' => 'Can create controller master settings'],
-            ['name' => 'edit-controller-master', 'module' => 'admin', 'label' => 'Edit Controller Master', 'description' => 'Can edit controller master settings'],
-            ['name' => 'delete-controller-master', 'module' => 'admin', 'label' => 'Delete Controller Master', 'description' => 'Can delete controller master settings'],
-            ['name' => 'manage-code-master', 'module' => 'admin', 'label' => 'Manage Code Master', 'description' => 'Can manage code master settings'],
-            ['name' => 'view-code-master', 'module' => 'admin', 'label' => 'View Code Master', 'description' => 'Can view code master settings'],
-            ['name' => 'create-code-master', 'module' => 'admin', 'label' => 'Create Code Master', 'description' => 'Can create code master settings'],
-            ['name' => 'edit-code-master', 'module' => 'admin', 'label' => 'Edit Code Master', 'description' => 'Can edit code master settings'],
-            ['name' => 'delete-code-master', 'module' => 'admin', 'label' => 'Delete Code Master', 'description' => 'Can delete code master settings'],
-
             // Media Library
             ['name' => 'manage-media', 'module' => 'media', 'label' => 'Manage Media', 'description' => 'Can access and manage media library'],
             ['name' => 'manage-any-media', 'module' => 'media', 'label' => 'Manage All Media', 'description' => 'Can manage media across company'],
@@ -82,6 +70,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'edit-media-directories', 'module' => 'media', 'label' => 'Edit Media Directories', 'description' => 'Can edit media directories'],
             ['name' => 'delete-media-directories', 'module' => 'media', 'label' => 'Delete Media Directories', 'description' => 'Can delete media directories'],
         ];
+
+        // Clean up any removed master data permissions
+        Permission::where('slug', 'like', '%controller-master%')
+            ->orWhere('slug', 'like', '%code-master%')
+            ->delete();
 
         $permissionIds = [];
 
@@ -101,6 +94,12 @@ class PermissionSeeder extends Seeder
         $superAdminRole = Role::where('slug', 'super_admin')->first();
         if ($superAdminRole) {
             $superAdminRole->permissions()->syncWithoutDetaching($permissionIds);
+        }
+
+        // Ensure company_admin role has company-scoped permissions
+        $companyAdminRole = Role::where('slug', 'company_admin')->first();
+        if ($companyAdminRole) {
+            $companyAdminRole->permissions()->syncWithoutDetaching($permissionIds);
         }
     }
 }

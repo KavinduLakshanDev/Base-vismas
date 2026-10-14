@@ -38,7 +38,7 @@ export default function UsersCreate({
     const { auth } = usePage<any>().props;
     const authUser = auth?.user;
     const isSuperAdmin = authUser?.user_type === 'super_admin' || authUser?.role_id === 1;
-    const activeCompany = (props.auth as any)?.active_company || (authUser as any)?.company;
+    const activeCompany = (auth as any)?.active_company || (authUser as any)?.company;
     const activeCompanyCode = activeCompany?.company_code || authUser?.company_code || '';
 
     const [formData, setFormData] = useState({

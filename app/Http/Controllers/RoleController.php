@@ -23,15 +23,11 @@ class RoleController extends Controller
     public function index(Request $request): Response
     {
         $user = Auth::user();
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
 
-        // Check if user has permission to view roles
-        if (!$user->hasPermission('roles.view')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to view roles.');
-        }
         $query = Role::with(['permissions', 'company', 'section']);
 
         // Filter based on active company
-        $activeCompanyCode = session('active_company_code', $user->company_code);
         if ($activeCompanyCode) {
             $query->where(function($q) use ($activeCompanyCode) {
                 $q->where('company_code', $activeCompanyCode)
@@ -55,18 +51,13 @@ class RoleController extends Controller
         }
 
         $roles = $query->orderBy('name')->paginate(20);
-
-        // Ensure permissions are loaded for each role
-        $roles->getCollection()->transform(function ($role) {
-            if (!$role->relationLoaded('permissions')) {
-                $role->load('permissions');
-            }
-            return $role;
-        });
+        $permissions = $this->getFilteredPermissions();
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
+            'permissions' => $permissions,
             'filters' => $request->only(['search', 'level']),
+            'currentUserType' => $user?->type ?? $user?->user_type,
             'success' => session('success'),
             'error' => session('error'),
         ]);
@@ -80,8 +71,7 @@ class RoleController extends Controller
         $user = Auth::user();
         $query = Role::with(['permissions:id,name,slug,description', 'company:id,name,company_code', 'section:id,name,section_code']);
 
-        // Filter based on active company
-        $activeCompanyCode = session('active_company_code', $user->company_code);
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
         if ($activeCompanyCode) {
             $query->where(function($q) use ($activeCompanyCode) {
                 $q->where('company_code', $activeCompanyCode)
@@ -89,7 +79,6 @@ class RoleController extends Controller
             });
         }
 
-        // Search functionality
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
@@ -99,7 +88,6 @@ class RoleController extends Controller
             });
         }
 
-        // Filter by level
         if ($request->filled('level')) {
             $query->where('level', $request->get('level'));
         }
@@ -122,18 +110,22 @@ class RoleController extends Controller
     }
 
     /**
+     * Get permissions filtered based on user privileges.
+     */
+    private function getFilteredPermissions()
+    {
+        return Permission::orderBy('name')->get();
+    }
+
+    /**
      * Show the form for creating a new role.
      */
     public function create(): Response
     {
         $user = Auth::user();
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
 
-        // Check if user has permission to create roles
-        if (!$user->hasPermission('roles.create')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to create roles.');
-        }
-        $permissions = Permission::orderBy('name')->get();
-        $activeCompanyCode = session('active_company_code', $user->company_code);
+        $permissions = $this->getFilteredPermissions();
         $companies = $activeCompanyCode ? Company::where('company_code', $activeCompanyCode)->get() : [];
         $sections = $activeCompanyCode ? Section::where('company_code', $activeCompanyCode)->where('is_active', true)->orderBy('name')->get() : [];
 
@@ -150,10 +142,6 @@ class RoleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
-
-        if (!$user->hasPermission('roles.create')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to create roles.');
-        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -174,12 +162,10 @@ class RoleController extends Controller
 
         $data = $validator->validated();
 
-        // Auto-generate slug if not provided
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name'], '_');
         }
 
-        // Ensure slug is unique
         $originalSlug = $data['slug'];
         $counter = 1;
         while (Role::where('slug', $data['slug'])->exists()) {
@@ -187,7 +173,7 @@ class RoleController extends Controller
             $counter++;
         }
 
-        $activeCompanyCode = session('active_company_code', $user->company_code);
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
         $data['company_code'] = $activeCompanyCode;
         if ($activeCompanyCode) {
             $comp = Company::where('company_code', $activeCompanyCode)->first();
@@ -196,12 +182,8 @@ class RoleController extends Controller
             }
         }
 
-        // System roles can only be created by super admins
-        if ($user->user_type !== 'super_admin') {
-            $data['is_system_role'] = false;
-        } else {
-            $data['is_system_role'] = $request->boolean('is_system_role', false);
-        }
+        $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
+        $data['is_system_role'] = $isSuperAdmin && $request->boolean('is_system_role', false);
 
         $permissions = $data['permissions'] ?? [];
         unset($data['permissions']);
@@ -212,7 +194,7 @@ class RoleController extends Controller
         });
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role created successfully.');
+            ->with('success', 'Role created successfully with Permissions!');
     }
 
     /**
@@ -220,19 +202,6 @@ class RoleController extends Controller
      */
     public function show(Role $role): Response
     {
-        $user = Auth::user();
-
-        if (!$user->hasPermission('roles.view')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to view roles.');
-        }
-
-        // Check if user has access to view this role
-        if ($user->user_type === 'company_user' &&
-            $role->company_code &&
-            $role->company_code !== $user->company_code) {
-            return redirect()->back()->with('error', 'You do not have permission to view this role.');
-        }
-
         $role->load(['permissions', 'company', 'section', 'users']);
 
         return Inertia::render('Roles/Show', [
@@ -246,29 +215,18 @@ class RoleController extends Controller
     public function edit(Role $role): Response
     {
         $user = Auth::user();
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
 
-        if (!$user->hasPermission('roles.edit')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to edit roles.');
-        }
-
-        // Check if user has access to edit this role
-        if ($user->user_type === 'company_user' &&
-            $role->company_id &&
-            $role->company_id !== $user->company_id) {
-            return redirect()->back()->with('error', 'You do not have permission to edit this role.');
-        }
-
-        // System roles can only be edited by super admins
-        if ($role->is_system_role && $user->user_type !== 'super_admin') {
-            return redirect()->back()->with('error', 'You do not have permission to edit system roles.');
-        }
-
-        $permissions = Permission::orderBy('name')->get();
-        $activeCompanyCode = session('active_company_code', $user->company_code);
         if ($role->company_code && $activeCompanyCode && $role->company_code !== $activeCompanyCode) {
             return redirect()->route('roles.index')->with('error', 'Unauthorized access to this role.');
         }
 
+        $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
+        if ($role->is_system_role && !$isSuperAdmin) {
+            return redirect()->back()->with('error', 'System roles can only be edited by super admins.');
+        }
+
+        $permissions = $this->getFilteredPermissions();
         $companies = $activeCompanyCode ? Company::where('company_code', $activeCompanyCode)->get() : [];
         $sections = $activeCompanyCode ? Section::where('company_code', $activeCompanyCode)->where('is_active', true)->orderBy('name')->get() : [];
 
@@ -289,19 +247,15 @@ class RoleController extends Controller
     public function update(Request $request, Role $role): RedirectResponse
     {
         $user = Auth::user();
+        $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
 
-        if (!$user->hasPermission('roles.edit')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to edit roles.');
+        if ($role->is_system_role && !$isSuperAdmin) {
+            return redirect()->back()->with('error', 'System roles can only be edited by super admins.');
         }
 
-        $activeCompanyCode = session('active_company_code', $user->company_code);
+        $activeCompanyCode = session('active_company_code', $user?->company_code);
         if ($role->company_code && $activeCompanyCode && $role->company_code !== $activeCompanyCode) {
             return redirect()->route('roles.index')->with('error', 'Unauthorized access to this role.');
-        }
-
-        // System roles can only be edited by super admins
-        if ($role->is_system_role && $user->user_type !== 'super_admin') {
-            return redirect()->back()->with('error', 'You do not have permission to edit system roles.');
         }
 
         $validator = Validator::make($request->all(), [
@@ -323,29 +277,15 @@ class RoleController extends Controller
 
         $data = $validator->validated();
 
-        // Auto-generate slug if not provided
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name'], '_');
         }
 
-        // Ensure slug is unique (excluding current role)
         $originalSlug = $data['slug'];
         $counter = 1;
         while (Role::where('slug', $data['slug'])->where('id', '!=', $role->id)->exists()) {
             $data['slug'] = $originalSlug . '_' . $counter;
             $counter++;
-        }
-
-        // Validate access restrictions
-        if ($user->user_type === 'company_user') {
-            $data['company_code'] = $user->company_code;
-
-            // Company users cannot modify certain role levels
-            if (in_array($data['level'], ['super_admin', 'company_admin']) && $user->role->level !== 'company_admin') {
-                return redirect()->back()
-                    ->with('error', 'You do not have permission to set this role level.')
-                    ->withInput();
-            }
         }
 
         $permissions = $data['permissions'] ?? [];
@@ -357,144 +297,35 @@ class RoleController extends Controller
         });
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role updated successfully.');
+            ->with('success', 'Role updated successfully with Permissions!');
     }
 
     /**
      * Remove the specified role from storage.
      */
-    public function destroy(Request $request, Role $role): RedirectResponse
+    public function destroy(Role $role): RedirectResponse
     {
         $user = Auth::user();
+        $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
 
-        if (!$user->hasPermission('roles.delete')) {
-            return redirect()->back()->with('error', 'Unauthorized. You do not have permission to delete roles.');
+        // Prevent deletion of system roles by non-superadmins
+        if ($role->is_system_role && !$isSuperAdmin) {
+            return redirect()->back()->with('error', 'System roles cannot be deleted!');
         }
 
-        $activeCompanyCode = session('active_company_code', $user->company_code);
-        if ($role->company_code && $activeCompanyCode && $role->company_code !== $activeCompanyCode) {
-            return redirect()->route('roles.index')->with('error', 'Unauthorized access to this role.');
-        }
-
-        // System roles can only be deleted by super admins
-        if ($role->is_system_role && $user->user_type !== 'super_admin') {
-            return redirect()->back()
-                ->with('error', 'System roles cannot be deleted.');
-        }
-
-        $force = (bool) $request->get('force', false);
-
-        // Prevent deletion of core super_admin role at all costs
+        // Prevent deletion of core super_admin role
         if ($role->slug === 'super_admin') {
             return redirect()->back()->with('error', 'The super_admin role cannot be deleted.');
         }
 
-        // Check if role is being used by any users
-        if (!$force && $role->users()->exists()) {
-            return redirect()->back()
-                ->with('error', 'Cannot delete role. It is currently assigned to one or more users.');
-        }
-
-        // When forcing deletion, only super admins can perform it
-        if ($force) {
-            if ($user->user_type !== 'super_admin') {
-                return redirect()->back()->with('error', 'Only super_admins can force delete roles.');
-            }
-
-            DB::transaction(function () use ($role) {
-                // Detach permissions
-                $role->permissions()->detach();
-
-                // Reassign users assigned to this role to a fallback 'user' role (or first available role)
-                $fallbackRole = Role::where('level', 'user')->where('id', '!=', $role->id)->first();
-                if (!$fallbackRole) {
-                    // Try to find any role that's not the one being deleted
-                    $fallbackRole = Role::where('id', '!=', $role->id)->first();
-                }
-                if (!$fallbackRole) {
-                    // Create a fallback role if none exist
-                    $fallbackRole = Role::firstOrCreate(
-                        ['slug' => 'staff_user'],
-                        [
-                            'name' => 'Staff User',
-                            'description' => 'Default staff role',
-                            'level' => 'user',
-                            'is_system_role' => true,
-                        ]
-                    );
-                }
-
-                // Update each user to fallback role
-                if ($fallbackRole) {
-                    $role->users()->update(['role_id' => $fallbackRole->id]);
-                }
-
-                // Finally delete the role
-                $role->delete();
-            });
-
-            \Illuminate\Support\Facades\Log::info("Role {$role->id} force-deleted by user " . ($user?->id ?? 'unknown'));
-
-            return redirect()->route('roles.index')
-                ->with('success', 'Role force-deleted successfully.');
+        // If the role has users assigned, prevent deletion
+        if ($role->users()->count() > 0) {
+            return redirect()->back()->with('error', 'Role cannot be deleted as it is assigned to users!');
         }
 
         $role->delete();
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role deleted successfully.');
-    }
-
-    /**
-     * Get all roles for API use (used in dropdowns, etc.)
-     */
-    public function getAllRoles(Request $request): \Illuminate\Http\JsonResponse
-    {
-        $user = Auth::user();
-
-        // Check if permissions should be included
-        $includePermissions = $request->boolean('include_permissions', false);
-
-        if ($includePermissions) {
-            $query = Role::with(['permissions:id,name,slug,description']);
-        } else {
-            $query = Role::select('id', 'name', 'slug', 'description', 'level', 'company_code', 'section_code');
-        }
-
-        // Filter based on user access
-        if ($user->user_type === 'company_user') {
-            $query->where(function($q) use ($user) {
-                $q->where('company_code', $user->company_code)
-                  ->orWhere('is_system_role', true);
-            });
-        }
-
-        $roles = $query->orderBy('name')->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $roles,
-            'count' => $roles->count(),
-        ]);
-    }
-
-    /**
-     * Get sections for a specific company
-     */
-    public function getSectionsByCompany(Company $company): \Illuminate\Http\JsonResponse
-    {
-        $user = Auth::user();
-
-        // Check if user has access to this company
-        if ($user->user_type === 'company_user' && $user->company_code !== $company->company_code) {
-            return redirect()->back()->with('error', 'You do not have permission to view sections for this company.');
-        }
-
-        $sections = Section::where('company_code', $company->company_code)
-            ->select('id', 'name', 'section_code')
-            ->orderBy('name')
-            ->get();
-
-        return response()->json($sections);
+            ->with('success', 'Role deleted successfully!');
     }
 }
