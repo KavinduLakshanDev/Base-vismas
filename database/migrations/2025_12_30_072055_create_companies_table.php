@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->string('contact_person_name')->nullable();
             $table->string('contact_person_number')->nullable();
             $table->string('email')->unique();
-            $table->string('password');
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->string('city')->nullable();

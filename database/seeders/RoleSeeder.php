@@ -20,10 +20,11 @@ class RoleSeeder extends Seeder
                 'description' => 'Has full access to the entire system',
                 'level' => 'super_admin',
                 'company_code' => null,
+                'is_system_role' => true,
             ]
         );
 
-        // Company Admin Role
+        // Company Admin Role (System-wide role for all company admins)
         Role::firstOrCreate(
             ['slug' => 'company_admin'],
             [
@@ -31,6 +32,7 @@ class RoleSeeder extends Seeder
                 'description' => 'Has full access to their company',
                 'level' => 'company_admin',
                 'company_code' => null,
+                'is_system_role' => true,
             ]
         );
     }

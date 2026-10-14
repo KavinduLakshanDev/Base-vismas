@@ -48,11 +48,11 @@ class UsersSeeder extends Seeder
 
         // --- 2. MALIBO (MAL001) COMPANY ADMIN ---
         User::firstOrCreate(
-            ['email' => 'admin.malibo@example.com'],
+            ['email' => 'admin.malibu@example.com'],
             [
-                'username' => 'malibo_admin',
+                'username' => 'malibu_admin',
                 'password' => Hash::make('password'),
-                'first_name' => 'Malibo',
+                'first_name' => 'Malibu',
                 'last_name' => 'Admin',
                 'phone' => '0777654321',
                 'user_type' => 'company_admin',

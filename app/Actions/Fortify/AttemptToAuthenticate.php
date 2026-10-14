@@ -25,16 +25,8 @@ class AttemptToAuthenticate extends BaseAttemptToAuthenticate
 
     public function handle($request, $next)
     {
-        // Try web guard first
+        // Try web guard
         if ($this->guard->attempt(
-            $request->only(Fortify::username(), 'password'),
-            $request->boolean('remember')
-        )) {
-            return $next($request);
-        }
-
-        // Try company guard
-        if ($this->auth->guard('company')->attempt(
             $request->only(Fortify::username(), 'password'),
             $request->boolean('remember')
         )) {

@@ -41,7 +41,7 @@ class HandleInertiaRequests extends Middleware
         $quote = Inspiring::quotes()->random();
         [$message, $author] = str($quote)->explode('-', 2); // Limit to 2 parts
 
-        $user = $request->user() ?? $request->user('company');
+        $user = $request->user();
 
         if ($user instanceof \App\Models\User) {
             $user->loadMissing('role.permissions');
@@ -61,33 +61,12 @@ class HandleInertiaRequests extends Middleware
             $roles = array_values(array_unique(array_filter([$user->user_type, $user->role?->level])));
             $user->setAttribute('permissions', $permissions);
             $user->setAttribute('roles', $roles);
-        } elseif ($user instanceof \App\Models\Company) {
-            $user->setAttribute('permissions', [
-                'manage-settings', 'manage-brand-settings', 'manage-company-settings', 'manage-system-settings',
-                'manage-currency-settings', 'manage-cookie-settings', 'manage-pusher-settings', 'manage-seo-settings',
-                'manage-storage-settings', 'manage-email-settings', 'manage-email-notification-settings',
-                'manage-bank-transfer-settings', 'manage-cache-settings',
-                'edit-brand-settings', 'edit-company-settings', 'edit-system-settings', 'edit-currency-settings',
-                'clear-cache', 'edit-cookie-settings', 'manage-cookie-settings', 'edit-email-settings',
-                'test-email', 'edit-seo-settings', 'edit-storage-settings', 'edit-bank-transfer-settings',
-                'edit-pusher-settings'
-            ]);
-            $user->setAttribute('roles', ['company', 'company_admin']);
         }
 
         $activeCompanyCode = session('active_company_code', $user?->company_code);
         $activeCompany = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
 
-        $company = $request->user('company');
-        if (! $company) {
-            if ($user instanceof \App\Models\Company) {
-                $company = $user;
-            } elseif ($activeCompany) {
-                $company = $activeCompany;
-            } elseif ($user instanceof \App\Models\User) {
-                $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
-            }
-        }
+        $company = $activeCompany ?: ($user?->company ?? ($user?->user_type === 'super_admin' ? \App\Models\Company::first() : null));
 
         return [
             ...parent::share($request),

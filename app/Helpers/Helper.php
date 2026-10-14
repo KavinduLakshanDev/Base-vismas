@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Cache;
 if (!function_exists('creatorId')) {
     function creatorId(): ?int
     {
-        $company = Auth::guard('company')->user();
-        if ($company) {
-            return $company->id;
-        }
-
         $user = Auth::user();
         if (!$user) {
             return null;
@@ -30,11 +25,6 @@ if (!function_exists('creatorId')) {
 if (!function_exists('creatorUser')) {
     function creatorUser()
     {
-        $company = Auth::guard('company')->user();
-        if ($company) {
-            return $company;
-        }
-
         $user = Auth::user();
         if (!$user) {
             return null;

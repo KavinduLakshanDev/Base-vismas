@@ -20,7 +20,6 @@ class CompanySeeder extends Seeder
                 'contact_person_name' => 'John Doe',
                 'contact_person_number' => '0771234567',
                 'email' => 'vismass@example.com',
-                'password' => 'password', // Will be hashed by model cast
                 'phone' => '0112345678',
                 'address' => '123, Main Street',
                 'city' => 'Colombo',
@@ -44,7 +43,6 @@ class CompanySeeder extends Seeder
                 'contact_person_name' => 'Jane Smith',
                 'contact_person_number' => '0777654321',
                 'email' => 'malibo@example.com',
-                'password' => 'password', // Will be hashed by model cast
                 'phone' => '0118765432',
                 'address' => '456, Secondary Street',
                 'city' => 'Colombo',

@@ -147,7 +147,7 @@ class RoleController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:roles,slug',
             'description' => 'nullable|string|max:500',
-            'level' => 'required|in:super_admin,company_admin,branch_admin,user',
+            'level' => 'required|in:super_admin,company_admin,user',
             'company_id' => 'nullable|exists:companies,id',
             'section_id' => 'nullable|exists:sections,id',
             'permissions' => 'array',
@@ -183,6 +183,13 @@ class RoleController extends Controller
         }
 
         $isSuperAdmin = method_exists($user, 'isSuperAdmin') ? $user->isSuperAdmin() : in_array($user?->user_type ?? '', ['super_admin', 'superadmin', 'super admin']);
+
+        if (!$isSuperAdmin && $data['level'] === 'super_admin') {
+            return redirect()->back()
+                ->withErrors(['level' => 'You do not have permission to create a Super Admin role.'])
+                ->withInput();
+        }
+
         $data['is_system_role'] = $isSuperAdmin && $request->boolean('is_system_role', false);
 
         $permissions = $data['permissions'] ?? [];
@@ -262,7 +269,7 @@ class RoleController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255|unique:roles,slug,' . $role->id,
             'description' => 'nullable|string|max:500',
-            'level' => 'required|in:super_admin,company_admin,branch_admin,user',
+            'level' => 'required|in:super_admin,company_admin,user',
             'company_id' => 'nullable|exists:companies,id',
             'section_id' => 'nullable|exists:sections,id',
             'permissions' => 'array',
@@ -276,6 +283,12 @@ class RoleController extends Controller
         }
 
         $data = $validator->validated();
+
+        if (!$isSuperAdmin && $data['level'] === 'super_admin') {
+            return redirect()->back()
+                ->withErrors(['level' => 'You do not have permission to assign Super Admin level.'])
+                ->withInput();
+        }
 
         if (empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name'], '_');

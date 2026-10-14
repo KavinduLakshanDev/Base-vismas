@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\CompanyController;
-use App\Http\Controllers\CompanyAuthController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\CompanySelectionController;
 use App\Http\Controllers\MediaController;
@@ -20,22 +19,23 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::middleware(['auth:web,company', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        if (auth()->guard('company')->check()) {
-            return redirect()->route('company.dashboard');
-        }
-
         $user = auth()->user();
         if ($user && $user->user_type === 'super_admin' && !session('active_company_code') && !$user->getRawOriginal('company_code')) {
             return redirect()->route('company.select');
+        }
+
+        if ($user && in_array($user->user_type, ['company_admin', 'company_user'])) {
+            return redirect()->route('company.dashboard');
         }
 
         return Inertia::render('dashboard');
     })->name('dashboard');
 
     Route::get('dashboard/redirect', function () {
-        if (auth()->guard('company')->check()) {
+        $user = auth()->user();
+        if ($user && in_array($user->user_type, ['company_admin', 'company_user'])) {
             return redirect()->route('company.dashboard');
         }
         return redirect()->route('dashboard');
@@ -46,17 +46,24 @@ Route::middleware(['auth:web,company', 'verified'])->group(function () {
     Route::post('companies/{company}/toggle-status', [CompanySelectionController::class, 'toggleStatus'])->name('company.toggle-status');
 });
 
-Route::middleware('guest:company')->group(function () {
-    Route::get('company/login', [CompanyAuthController::class, 'create'])->name('company.login');
-    Route::post('company/login', [CompanyAuthController::class, 'store']);
-});
-
-Route::middleware(['auth:web,company'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('company/dashboard', function () {
         return Inertia::render('company-dashboard');
     })->name('company.dashboard');
 
-    Route::post('company/logout', [CompanyAuthController::class, 'destroy'])->name('company.logout');
+    Route::match(['get', 'post'], 'company/logout', function (\Illuminate\Http\Request $request) {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    })->name('company.logout');
+
+    Route::get('logout', function (\Illuminate\Http\Request $request) {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    });
 
     // Company Profile
     Route::middleware('permission:manage-company-profile')->group(function () {

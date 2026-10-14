@@ -10,10 +10,9 @@ class CompanyController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user('web');
-        $company = $request->user('company');
+        $user = $request->user();
         
-        $activeCompanyCode = session('active_company_code', $company ? $company->company_code : ($user ? $user->company_code : null));
+        $activeCompanyCode = session('active_company_code', $user ? $user->company_code : null);
         
         if ($activeCompanyCode) {
             return response()->json(Company::where('company_code', $activeCompanyCode)->get());

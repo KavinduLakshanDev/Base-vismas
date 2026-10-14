@@ -19,7 +19,7 @@ class MediaController extends Controller
 {
     private function getAuthenticatedUser(Request $request)
     {
-        return $request->user('company') ?? $request->user('web') ?? Auth::user();
+        return $request->user() ?? Auth::user();
     }
 
     private function getTenantId(Request $request): ?int
@@ -29,17 +29,6 @@ class MediaController extends Controller
             return null;
         }
 
-        // If company guard
-        if ($request->user('company')) {
-            return $user->id;
-        }
-
-        // If super admin
-        if (isset($user->user_type) && $user->user_type === 'super_admin') {
-            return $user->id;
-        }
-
-        // If normal user
         return $user->id;
     }
 

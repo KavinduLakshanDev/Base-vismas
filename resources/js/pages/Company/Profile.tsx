@@ -11,7 +11,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { FormEventHandler, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Building2, User, MapPin, FileText, Lock, Settings, ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
+import { Building2, User, MapPin, FileText, Settings, ArrowLeft, Pencil, Trash2, Plus } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -70,8 +70,6 @@ export default function CompanyProfile({ company }: Props) {
         vat_rate: company?.vat_rate || '',
         vat_no: company?.vat_no || '',
         vat_effective_date: company?.vat_effective_date || '',
-        password: '',
-        password_confirmation: '',
     });
 
     const [vatRates, setVatRates] = useState<VatRate[]>([]);
@@ -493,55 +491,7 @@ export default function CompanyProfile({ company }: Props) {
                                 </div>
                             </div>
 
-                            {/* Password Change Section */}
-                            <div className="space-y-6">
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Lock className="w-5 h-5 text-blue-600" />
-                                    </div>
-                                    <h2 className="text-xl font-semibold text-gray-800">Change Password</h2>
-                                </div>
 
-                                <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-200/50">
-                                    <p className="text-sm text-blue-700 mb-4">
-                                        Leave blank if you don't want to change your password.
-                                    </p>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center">
-                                                <Lock className="w-4 h-4 mr-2 text-blue-500" />
-                                                New Password
-                                            </Label>
-                                            <Input
-                                                id="password"
-                                                type="password"
-                                                value={data.password}
-                                                onChange={(e) => setData('password', e.target.value)}
-                                                className="border-blue-200 focus:border-blue-400 focus:ring-blue-400/20 bg-white/50 backdrop-blur-sm"
-                                                placeholder="Enter new password"
-                                            />
-                                            <InputError message={errors.password} />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="password_confirmation" className="text-sm font-medium text-gray-700 flex items-center">
-                                                <Lock className="w-4 h-4 mr-2 text-blue-500" />
-                                                Confirm New Password
-                                            </Label>
-                                            <Input
-                                                id="password_confirmation"
-                                                type="password"
-                                                value={data.password_confirmation}
-                                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                                className="border-blue-200 focus:border-blue-400 focus:ring-blue-400/20 bg-white/50 backdrop-blur-sm"
-                                                placeholder="Confirm new password"
-                                            />
-                                            <InputError message={errors.password_confirmation} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
                             {/* Submit Button */}
                             <div className="flex justify-end pt-6 border-t border-blue-200/50">

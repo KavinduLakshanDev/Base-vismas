@@ -16,7 +16,7 @@ export default function CompanyDashboard() {
     const user = auth.user;
 
     const handleLogout = () => {
-        router.post('/company/logout');
+        router.post('/logout');
     };
 
     return (
@@ -26,8 +26,8 @@ export default function CompanyDashboard() {
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="p-4 bg-white rounded-lg shadow flex justify-between items-center">
                     <div>
-                        <h2 className="text-xl font-semibold">Welcome, {user?.name}</h2>
-                        <p>You are logged in as a company.</p>
+                        <h2 className="text-xl font-semibold">Welcome, {String(user?.name || (user as any)?.username || 'User')}</h2>
+                        <p className="text-sm text-slate-500">{user?.email}</p>
                     </div>
                     <Button onClick={handleLogout} variant="destructive">
                         Logout

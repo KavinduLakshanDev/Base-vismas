@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ interface Role {
     name: string;
     slug: string;
     description?: string;
-    level: 'super_admin' | 'company_admin' | 'branch_admin' | 'user';
+    level: 'super_admin' | 'company_admin' | 'user';
     company_id?: number;
     section_id?: number;
     is_system_role: boolean;
@@ -55,7 +55,7 @@ interface FormData {
     name: string;
     slug: string;
     description: string;
-    level: 'super_admin' | 'company_admin' | 'branch_admin' | 'user';
+    level: 'super_admin' | 'company_admin' | 'user';
     company_id: string;
     section_id: string;
     is_system_role: boolean;
@@ -77,6 +77,8 @@ export default function Edit({
     sections,
     selectedPermissions,
 }: Props) {
+    const { auth } = usePage<any>().props;
+    const isSuperAdmin = auth?.user?.user_type === 'super_admin' || auth?.user?.role?.level === 'super_admin';
     const [permissionSearch, setPermissionSearch] = useState('');
     const [selectedAll, setSelectedAll] = useState(false);
 
@@ -246,9 +248,10 @@ export default function Edit({
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="user">{t('User')}</SelectItem>
-                                                    <SelectItem value="branch_admin">{t('Branch Admin')}</SelectItem>
                                                     <SelectItem value="company_admin">{t('Company Admin')}</SelectItem>
-                                                    <SelectItem value="super_admin">{t('Super Admin')}</SelectItem>
+                                                    {isSuperAdmin && (
+                                                        <SelectItem value="super_admin">{t('Super Admin')}</SelectItem>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                             <InputError message={errors.level} />
@@ -309,7 +312,7 @@ export default function Edit({
                                         {sections.length > 0 && data.company_id && (
                                             <div className="space-y-2">
                                                 <Label htmlFor="section_id" className="text-sm font-medium text-slate-700">
-                                                    {t('Section / Branch Scope')}
+                                                    {t('Section Scope')}
                                                 </Label>
                                                 <Select
                                                     value={data.section_id}
@@ -454,12 +457,16 @@ export default function Edit({
 
                             {/* Submit Buttons */}
                             <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
-                                <Link
-                                    href={route('roles.index')}
-                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    asChild
+                                    className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 h-auto"
                                 >
-                                    {t('Cancel')}
-                                </Link>
+                                    <Link href={route('roles.index')}>
+                                        {t('Cancel')}
+                                    </Link>
+                                </Button>
                                 <Button
                                     type="submit"
                                     disabled={processing}

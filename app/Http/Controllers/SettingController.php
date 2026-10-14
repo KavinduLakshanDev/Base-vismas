@@ -17,7 +17,7 @@ class SettingController extends Controller
 {
     private function canUser(string $permission = 'manage-settings'): bool
     {
-        $user = Auth::user() ?? Auth::guard('company')->user();
+        $user = Auth::user();
         if (!$user) {
             return false;
         }
@@ -60,14 +60,11 @@ class SettingController extends Controller
 
 
 
-            $company = Auth::guard('company')->user();
-            if (!$company) {
-                $user = Auth::user();
-                $activeCompanyCode = session('active_company_code', $user?->company_code);
-                $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
-                if (!$company && $user) {
-                    $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
-                }
+            $user = Auth::user();
+            $activeCompanyCode = session('active_company_code', $user?->company_code);
+            $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
+            if (!$company && $user) {
+                $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
             }
 
             return Inertia::render('settings/index', [
@@ -238,14 +235,11 @@ class SettingController extends Controller
             }
 
             // Sync with active company profile if available
-            $company = Auth::guard('company')->user();
-            if (!$company) {
-                $user = Auth::user();
-                $activeCompanyCode = session('active_company_code', $user?->company_code);
-                $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
-                if (!$company && $user) {
-                    $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
-                }
+            $user = Auth::user();
+            $activeCompanyCode = session('active_company_code', $user?->company_code);
+            $company = $activeCompanyCode ? \App\Models\Company::where('company_code', $activeCompanyCode)->first() : null;
+            if (!$company && $user) {
+                $company = $user->company ?? ($user->user_type === 'super_admin' ? \App\Models\Company::first() : null);
             }
 
             if ($company) {

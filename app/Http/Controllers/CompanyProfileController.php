@@ -59,15 +59,7 @@ class CompanyProfileController extends Controller
             'vat_no' => 'nullable|string|max:50',
             'vat_rate' => 'nullable|numeric|min:0|max:100',
             'vat_effective_date' => 'nullable|date',
-            'password' => 'nullable|string|min:8|confirmed',
         ]);
-
-        // Remove password if not provided
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        } else {
-            $validated['password'] = Hash::make($validated['password']);
-        }
 
         $company->fill($validated);
 

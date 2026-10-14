@@ -13,11 +13,11 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!auth()->check() && !auth()->guard('company')->check()) {
+        if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        $user = auth()->user() ?? auth()->guard('company')->user();
+        $user = auth()->user();
         
         // Super admin has all permissions
         if (

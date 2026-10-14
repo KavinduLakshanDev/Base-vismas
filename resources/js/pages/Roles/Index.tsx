@@ -26,7 +26,7 @@ interface Role {
     name: string;
     slug: string;
     description?: string;
-    level: 'super_admin' | 'company_admin' | 'branch_admin' | 'user';
+    level: 'super_admin' | 'company_admin' | 'user';
     company?: {
         id: number;
         name: string;
@@ -156,8 +156,6 @@ export default function Index({ roles, filters, success, error }: Props) {
                 return 'bg-purple-100 text-purple-800 border-purple-200';
             case 'company_admin':
                 return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'branch_admin':
-                return 'bg-emerald-100 text-emerald-800 border-emerald-200';
             default:
                 return 'bg-slate-100 text-slate-800 border-slate-200';
         }
@@ -301,7 +299,6 @@ export default function Index({ roles, filters, success, error }: Props) {
                                                     <option value="all">{t('All Levels')}</option>
                                                     <option value="super_admin">{t('Super Admin')}</option>
                                                     <option value="company_admin">{t('Company Admin')}</option>
-                                                    <option value="branch_admin">{t('Branch Admin')}</option>
                                                     <option value="user">{t('User')}</option>
                                                 </select>
                                             </div>

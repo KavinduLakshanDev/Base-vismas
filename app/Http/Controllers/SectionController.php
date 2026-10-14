@@ -120,7 +120,7 @@ class SectionController extends Controller
 
     public function apiIndex(Request $request)
     {
-        $user = $request->user('company') ?? $request->user();
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'Unauthorized'], 401);

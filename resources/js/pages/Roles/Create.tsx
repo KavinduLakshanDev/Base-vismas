@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,7 @@ interface FormData {
     name: string;
     slug: string;
     description: string;
-    level: 'super_admin' | 'company_admin' | 'branch_admin' | 'user';
+    level: 'super_admin' | 'company_admin' | 'user';
     company_id: string;
     section_id: string;
     is_system_role: boolean;
@@ -63,6 +63,8 @@ interface Props {
 }
 
 export default function Create({ permissions, companies, sections }: Props) {
+    const { auth } = usePage<any>().props;
+    const isSuperAdmin = auth?.user?.user_type === 'super_admin' || auth?.user?.role?.level === 'super_admin';
     const [permissionSearch, setPermissionSearch] = useState('');
     const [selectedAll, setSelectedAll] = useState(false);
 
@@ -178,15 +180,6 @@ export default function Create({ permissions, companies, sections }: Props) {
 
                 {/* Main Content */}
                 <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0 mb-6">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
-                            {t('Create New Role')}
-                        </h1>
-                        <p className="text-slate-600 text-lg">
-                            {t('Configure access tier, scope, and specific system capabilities')}
-                        </p>
-                    </div>
-
                     {/* Form Container */}
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
@@ -249,9 +242,10 @@ export default function Create({ permissions, companies, sections }: Props) {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="user">{t('User')}</SelectItem>
-                                                    <SelectItem value="branch_admin">{t('Branch Admin')}</SelectItem>
                                                     <SelectItem value="company_admin">{t('Company Admin')}</SelectItem>
-                                                    <SelectItem value="super_admin">{t('Super Admin')}</SelectItem>
+                                                    {isSuperAdmin && (
+                                                        <SelectItem value="super_admin">{t('Super Admin')}</SelectItem>
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                             <InputError message={errors.level} />
@@ -307,7 +301,7 @@ export default function Create({ permissions, companies, sections }: Props) {
                                         {sections.length > 0 && data.company_id && (
                                             <div className="space-y-2">
                                                 <Label htmlFor="section_id" className="text-sm font-medium text-slate-700">
-                                                    {t('Section / Branch Scope')}
+                                                    {t('Section Scope')}
                                                 </Label>
                                                 <Select
                                                     value={data.section_id}
@@ -452,12 +446,16 @@ export default function Create({ permissions, companies, sections }: Props) {
 
                             {/* Submit Buttons */}
                             <div className="flex justify-end pt-6 border-t border-slate-200 space-x-3">
-                                <Link
-                                    href={route('roles.index')}
-                                    className="inline-flex items-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200"
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    asChild
+                                    className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all duration-200 h-auto"
                                 >
-                                    {t('Cancel')}
-                                </Link>
+                                    <Link href={route('roles.index')}>
+                                        {t('Cancel')}
+                                    </Link>
+                                </Button>
                                 <Button
                                     type="submit"
                                     disabled={processing || !data.name || !data.slug}

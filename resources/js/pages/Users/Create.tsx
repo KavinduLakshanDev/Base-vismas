@@ -369,7 +369,7 @@ export default function UsersCreate({
                                     {/* Section */}
                                     <div>
                                         <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
-                                            {t('Section / Branch')}
+                                            {t('Section')}
                                         </label>
                                         <select
                                             name="section_code"

@@ -7,7 +7,7 @@ use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::middleware(['auth:web,company'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings/brand', [SettingController::class, 'updateBrandSettings'])->name('settings.brand.update');
     Route::post('settings/company', [SettingController::class, 'updateCompanySettings'])->name('settings.company.update');

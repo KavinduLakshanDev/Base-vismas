@@ -332,7 +332,7 @@ export default function UsersShow({ user: initialUser }: ShowUserProps) {
                                 </div>
                                 <div>
                                     <dt className="text-slate-400 uppercase font-semibold text-[10px] tracking-wider">
-                                        {t('Section / Branch')}
+                                        {t('Section')}
                                     </dt>
                                     <dd className="mt-0.5 text-sm font-medium text-slate-900 flex items-center gap-1.5">
                                         <Layers className="h-3.5 w-3.5 text-slate-400" />

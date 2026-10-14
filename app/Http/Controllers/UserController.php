@@ -16,22 +16,20 @@ class UserController extends Controller
 {
     private function getActiveCompanyCode(Request $request): ?string
     {
-        $company = $request->user('company');
-        $user = $request->user('web');
+        $user = $request->user();
 
-        return session('active_company_code', $company ? $company->company_code : ($user ? $user->company_code : null));
+        return session('active_company_code', $user?->company_code);
     }
 
     public function index(Request $request)
     {
-        $company = $request->user('company');
-        $user = $request->user('web');
+        $user = $request->user();
 
-        if (!$company && !$user) {
+        if (!$user) {
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-            return redirect()->route('company.login');
+            return redirect()->route('login');
         }
 
         $activeCompanyCode = $this->getActiveCompanyCode($request);
@@ -106,14 +104,13 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $authUser = $request->user('web');
-        $authCompany = $request->user('company');
+        $authUser = $request->user();
 
-        if (!$authUser && !$authCompany) {
+        if (!$authUser) {
             if ($request->wantsJson() || $request->is('api/*')) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-            return redirect()->route('company.login');
+            return redirect()->route('login');
         }
 
         $activeCompanyCode = $this->getActiveCompanyCode($request);

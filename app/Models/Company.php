@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 
-class Company extends Authenticatable
+class Company extends Model
 {
     use HasFactory, Notifiable;
 
@@ -18,7 +18,6 @@ class Company extends Authenticatable
         'contact_person_name',
         'contact_person_number',
         'email',
-        'password',
         'phone',
         'address',
         'city',
@@ -33,13 +32,8 @@ class Company extends Authenticatable
         'is_active',
     ];
 
-    protected $hidden = [
-        'password',
-    ];
-
     protected $casts = [
         'vat_effective_date' => 'date',
-        'password' => 'hashed',
         'is_active' => 'boolean',
     ];
 
