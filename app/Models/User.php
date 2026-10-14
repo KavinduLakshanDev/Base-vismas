@@ -98,9 +98,19 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
+    public function getTypeAttribute()
+    {
+        return $this->user_type;
+    }
+
+    public function hasPermissionTo($permission)
+    {
+        return $this->hasPermission($permission);
+    }
+
     public function hasPermission($permissionSlug)
     {
-        if ($this->user_type === 'super_admin') {
+        if (in_array($this->user_type, ['super_admin', 'superadmin', 'super admin'])) {
             return true;
         }
 
@@ -108,15 +118,45 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($this->role->level === 'super_admin' || $this->role->level === 'company_admin') {
+        if (in_array($this->role->level, ['super_admin', 'superadmin', 'super admin', 'company_admin'])) {
             return true;
         }
 
-        return $this->role->permissions->contains('slug', $permissionSlug);
+        if (!$this->relationLoaded('role.permissions')) {
+            $this->loadMissing('role.permissions');
+        }
+
+        $permissions = $this->role->permissions ?? collect();
+
+        // Direct check
+        if ($permissions->contains('slug', $permissionSlug) || $permissions->contains('name', $permissionSlug)) {
+            return true;
+        }
+
+        // Bridge hyphenated and dot notation
+        if (str_contains($permissionSlug, '-')) {
+            [$action, $resource] = explode('-', $permissionSlug, 2);
+            if ($permissions->contains('slug', "{$resource}.{$action}")) {
+                return true;
+            }
+            if ($action === 'manage' && $permissions->contains('slug', "{$resource}.view")) {
+                return true;
+            }
+        } elseif (str_contains($permissionSlug, '.')) {
+            [$resource, $action] = explode('.', $permissionSlug, 2);
+            if ($permissions->contains('slug', "{$action}-{$resource}")) {
+                return true;
+            }
+            if ($action === 'view' && $permissions->contains('slug', "manage-{$resource}")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function isSuperAdmin()
     {
-        return $this->user_type === 'super_admin';
+        return in_array($this->user_type, ['super_admin', 'superadmin', 'super admin']);
     }
 }

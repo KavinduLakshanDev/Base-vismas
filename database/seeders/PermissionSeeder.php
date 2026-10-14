@@ -15,56 +15,92 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            // User & Access Management
-            ['name' => 'View Users', 'slug' => 'users.view', 'description' => 'Can view users'],
-            ['name' => 'Create Users', 'slug' => 'users.create', 'description' => 'Can create new users'],
-            ['name' => 'Edit Users', 'slug' => 'users.edit', 'description' => 'Can edit existing users'],
-            ['name' => 'Delete Users', 'slug' => 'users.delete', 'description' => 'Can delete users'],
-            
+            // Dashboard permissions
+            ['name' => 'manage-dashboard', 'module' => 'dashboard', 'label' => 'Manage Dashboard', 'description' => 'Can view dashboard'],
+            ['name' => 'view-dashboard', 'module' => 'dashboard', 'label' => 'View Dashboard', 'description' => 'Can view dashboard'],
+
+            // User management
+            ['name' => 'manage-users', 'module' => 'users', 'label' => 'Manage Users', 'description' => 'Can manage users'],
+            ['name' => 'manage-any-users', 'module' => 'users', 'label' => 'Manage All Users', 'description' => 'Manage Any Users'],
+            ['name' => 'manage-own-users', 'module' => 'users', 'label' => 'Manage Own Users', 'description' => 'Manage Limited Users that is created by own'],
+            ['name' => 'view-users', 'module' => 'users', 'label' => 'View Users', 'description' => 'View Users'],
+            ['name' => 'create-users', 'module' => 'users', 'label' => 'Create Users', 'description' => 'Can create users'],
+            ['name' => 'edit-users', 'module' => 'users', 'label' => 'Edit Users', 'description' => 'Can edit users'],
+            ['name' => 'delete-users', 'module' => 'users', 'label' => 'Delete Users', 'description' => 'Can delete users'],
+            ['name' => 'reset-password-users', 'module' => 'users', 'label' => 'Reset Password Users', 'description' => 'Can reset password users'],
+            ['name' => 'toggle-status-users', 'module' => 'users', 'label' => 'Change Status Users', 'description' => 'Can change status users'],
+
             // Roles & Permissions
-            ['name' => 'View Roles', 'slug' => 'roles.view', 'description' => 'Can view roles'],
-            ['name' => 'Create Roles', 'slug' => 'roles.create', 'description' => 'Can create new roles'],
-            ['name' => 'Edit Roles', 'slug' => 'roles.edit', 'description' => 'Can edit existing roles'],
-            ['name' => 'Delete Roles', 'slug' => 'roles.delete', 'description' => 'Can delete roles'],
+            ['name' => 'manage-roles', 'module' => 'roles', 'label' => 'Manage Roles', 'description' => 'Can manage roles'],
+            ['name' => 'view-roles', 'module' => 'roles', 'label' => 'View Roles', 'description' => 'Can view roles'],
+            ['name' => 'create-roles', 'module' => 'roles', 'label' => 'Create Roles', 'description' => 'Can create new roles'],
+            ['name' => 'edit-roles', 'module' => 'roles', 'label' => 'Edit Roles', 'description' => 'Can edit existing roles'],
+            ['name' => 'delete-roles', 'module' => 'roles', 'label' => 'Delete Roles', 'description' => 'Can delete roles'],
 
             // Permissions Management
-            ['name' => 'View Permissions', 'slug' => 'permissions.view', 'description' => 'Can view permissions'],
-            ['name' => 'Create Permissions', 'slug' => 'permissions.create', 'description' => 'Can create new permissions'],
-            ['name' => 'Edit Permissions', 'slug' => 'permissions.edit', 'description' => 'Can edit existing permissions'],
-            ['name' => 'Delete Permissions', 'slug' => 'permissions.delete', 'description' => 'Can delete permissions'],
+            ['name' => 'manage-permissions', 'module' => 'permissions', 'label' => 'Manage Permissions', 'description' => 'Can manage permissions'],
+            ['name' => 'view-permissions', 'module' => 'permissions', 'label' => 'View Permissions', 'description' => 'Can view permissions'],
+            ['name' => 'create-permissions', 'module' => 'permissions', 'label' => 'Create Permissions', 'description' => 'Can create new permissions'],
+            ['name' => 'edit-permissions', 'module' => 'permissions', 'label' => 'Edit Permissions', 'description' => 'Can edit existing permissions'],
+            ['name' => 'delete-permissions', 'module' => 'permissions', 'label' => 'Delete Permissions', 'description' => 'Can delete permissions'],
+
+            // Sections
+            ['name' => 'manage-sections', 'module' => 'sections', 'label' => 'Manage Sections', 'description' => 'Can manage sections'],
+            ['name' => 'view-sections', 'module' => 'sections', 'label' => 'View Sections', 'description' => 'Can view sections'],
+            ['name' => 'create-sections', 'module' => 'sections', 'label' => 'Create Sections', 'description' => 'Can create sections'],
+            ['name' => 'edit-sections', 'module' => 'sections', 'label' => 'Edit Sections', 'description' => 'Can edit sections'],
+            ['name' => 'delete-sections', 'module' => 'sections', 'label' => 'Delete Sections', 'description' => 'Can delete sections'],
 
             // Company & System Settings
-            ['name' => 'Manage Company Profile', 'slug' => 'company.profile', 'description' => 'Can manage company profile'],
-            ['name' => 'Manage Sections', 'slug' => 'sections.manage', 'description' => 'Can manage sections'],
-            ['name' => 'Manage VAT Rates', 'slug' => 'vat_rates.manage', 'description' => 'Can manage VAT rates'],
-            ['name' => 'Manage Controller Master', 'slug' => 'admin.controller_master', 'description' => 'Can manage controller master settings'],
-            ['name' => 'Manage Code Master', 'slug' => 'admin.code_master', 'description' => 'Can manage code master settings'],
-            ['name' => 'View Settings', 'slug' => 'settings.view', 'description' => 'Can view system settings'],
-            ['name' => 'Edit Settings', 'slug' => 'settings.edit', 'description' => 'Can modify system settings'],
+            ['name' => 'manage-company-profile', 'module' => 'company', 'label' => 'Manage Company Profile', 'description' => 'Can manage company profile'],
+            ['name' => 'manage-vat-rates', 'module' => 'company', 'label' => 'Manage VAT Rates', 'description' => 'Can manage VAT rates'],
+            ['name' => 'manage-settings', 'module' => 'settings', 'label' => 'Manage Settings', 'description' => 'Can view and modify system settings'],
+            ['name' => 'view-settings', 'module' => 'settings', 'label' => 'View Settings', 'description' => 'Can view system settings'],
+            ['name' => 'edit-settings', 'module' => 'settings', 'label' => 'Edit Settings', 'description' => 'Can modify system settings'],
+
+            // Admin Master Data
+            ['name' => 'manage-controller-master', 'module' => 'admin', 'label' => 'Manage Controller Master', 'description' => 'Can manage controller master settings'],
+            ['name' => 'view-controller-master', 'module' => 'admin', 'label' => 'View Controller Master', 'description' => 'Can view controller master settings'],
+            ['name' => 'create-controller-master', 'module' => 'admin', 'label' => 'Create Controller Master', 'description' => 'Can create controller master settings'],
+            ['name' => 'edit-controller-master', 'module' => 'admin', 'label' => 'Edit Controller Master', 'description' => 'Can edit controller master settings'],
+            ['name' => 'delete-controller-master', 'module' => 'admin', 'label' => 'Delete Controller Master', 'description' => 'Can delete controller master settings'],
+            ['name' => 'manage-code-master', 'module' => 'admin', 'label' => 'Manage Code Master', 'description' => 'Can manage code master settings'],
+            ['name' => 'view-code-master', 'module' => 'admin', 'label' => 'View Code Master', 'description' => 'Can view code master settings'],
+            ['name' => 'create-code-master', 'module' => 'admin', 'label' => 'Create Code Master', 'description' => 'Can create code master settings'],
+            ['name' => 'edit-code-master', 'module' => 'admin', 'label' => 'Edit Code Master', 'description' => 'Can edit code master settings'],
+            ['name' => 'delete-code-master', 'module' => 'admin', 'label' => 'Delete Code Master', 'description' => 'Can delete code master settings'],
 
             // Media Library
-            ['name' => 'Manage Media', 'slug' => 'manage-media', 'description' => 'Can access and manage media library'],
-            ['name' => 'Manage All Media', 'slug' => 'manage-any-media', 'description' => 'Can manage media across company'],
-            ['name' => 'Manage Own Media', 'slug' => 'manage-own-media', 'description' => 'Can manage own uploaded media'],
-            ['name' => 'Create Media', 'slug' => 'create-media', 'description' => 'Can upload new media files'],
-            ['name' => 'Download Media', 'slug' => 'download-media', 'description' => 'Can download media files'],
-            ['name' => 'Delete Media', 'slug' => 'delete-media', 'description' => 'Can delete media files'],
-            ['name' => 'Manage Media Directories', 'slug' => 'manage-media-directories', 'description' => 'Can manage directories'],
-            ['name' => 'Create Media Directories', 'slug' => 'create-media-directories', 'description' => 'Can create media directories'],
-            ['name' => 'Edit Media Directories', 'slug' => 'edit-media-directories', 'description' => 'Can edit media directories'],
-            ['name' => 'Delete Media Directories', 'slug' => 'delete-media-directories', 'description' => 'Can delete media directories'],
+            ['name' => 'manage-media', 'module' => 'media', 'label' => 'Manage Media', 'description' => 'Can access and manage media library'],
+            ['name' => 'manage-any-media', 'module' => 'media', 'label' => 'Manage All Media', 'description' => 'Can manage media across company'],
+            ['name' => 'manage-own-media', 'module' => 'media', 'label' => 'Manage Own Media', 'description' => 'Can manage own uploaded media'],
+            ['name' => 'create-media', 'module' => 'media', 'label' => 'Create Media', 'description' => 'Can upload new media files'],
+            ['name' => 'download-media', 'module' => 'media', 'label' => 'Download Media', 'description' => 'Can download media files'],
+            ['name' => 'delete-media', 'module' => 'media', 'label' => 'Delete Media', 'description' => 'Can delete media files'],
+            ['name' => 'manage-media-directories', 'module' => 'media', 'label' => 'Manage Media Directories', 'description' => 'Can manage directories'],
+            ['name' => 'create-media-directories', 'module' => 'media', 'label' => 'Create Media Directories', 'description' => 'Can create media directories'],
+            ['name' => 'edit-media-directories', 'module' => 'media', 'label' => 'Edit Media Directories', 'description' => 'Can edit media directories'],
+            ['name' => 'delete-media-directories', 'module' => 'media', 'label' => 'Delete Media Directories', 'description' => 'Can delete media directories'],
         ];
 
+        $permissionIds = [];
+
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(
-                ['slug' => $permission['slug']],
+            $record = Permission::updateOrCreate(
+                ['slug' => $permission['name']],
                 [
-                    'name' => $permission['name'],
-                    'description' => $permission['description'],
+                    'name' => $permission['label'] ?? $permission['name'],
+                    'description' => $permission['description'] ?? null,
                     'uuid' => (string) Str::uuid(),
                 ]
             );
+            $permissionIds[] = $record->id;
+        }
+
+        // Ensure super_admin role has all seeded permissions
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+        if ($superAdminRole) {
+            $superAdminRole->permissions()->syncWithoutDetaching($permissionIds);
         }
     }
-
 }

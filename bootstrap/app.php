@@ -31,9 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,
         ]);
         
-        // Register business unit middleware
+        // Register middleware aliases
         $middleware->alias([
             'business.unit' => BusinessUnitMiddleware::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

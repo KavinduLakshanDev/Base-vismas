@@ -52,7 +52,17 @@ class Company extends Authenticatable
         return 'company_admin';
     }
 
+    public function getTypeAttribute(): string
+    {
+        return 'company_admin';
+    }
+
     public function hasPermission(string $permissionSlug): bool
+    {
+        return true;
+    }
+
+    public function hasPermissionTo(string $permission): bool
     {
         return true;
     }
