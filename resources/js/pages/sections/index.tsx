@@ -1,11 +1,19 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Building, Plus, MapPin, Phone, Mail, CheckCircle, XCircle, Eye, Edit, Search, Filter, X, CheckCircle2, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 
 export default function SectionIndex({ sections }: { sections: any[] }) {
+    const { flash } = usePage<any>().props;
+
+    useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
+    }, [flash?.success, flash?.error]);
+
     const activeSections = sections.filter(section => section.is_active).length;
     const inactiveSections = sections.filter(section => !section.is_active).length;
     const warehouseCount = sections.filter(section => section.section_type === 'warehouse').length;
@@ -34,6 +42,35 @@ export default function SectionIndex({ sections }: { sections: any[] }) {
         setSearch('');
         setStatusFilter('active');
         setTypeFilter('');
+    };
+
+    const [togglingId, setTogglingId] = useState<number | null>(null);
+
+    const handleToggle = (section: any) => {
+        if (togglingId === section.id) return;
+        setTogglingId(section.id);
+        router.post(
+            `/sections/${section.id}/toggle`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    if (!flash?.success) {
+                        toast.success(
+                            section.is_active
+                                ? t('Section deactivated successfully')
+                                : t('Section activated successfully'),
+                        );
+                    }
+                },
+                onError: () => {
+                    toast.error(t('Failed to update section status'));
+                },
+                onFinish: () => {
+                    setTogglingId(null);
+                },
+            },
+        );
     };
 
     const filteredSections = sections.filter(section => {
@@ -278,22 +315,80 @@ export default function SectionIndex({ sections }: { sections: any[] }) {
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-2.5 whitespace-nowrap">
-                                                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                                                section.is_active
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                                {section.is_active ? t('Active') : t('Inactive')}
-                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                disabled={togglingId === section.id}
+                                                                onClick={() => handleToggle(section)}
+                                                                className={`px-2 py-0.5 text-xs font-medium rounded-full transition ${
+                                                                    togglingId === section.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'
+                                                                } ${
+                                                                    section.is_active
+                                                                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                                }`}
+                                                                title={section.is_active ? t('Click to deactivate') : t('Click to activate')}
+                                                            >
+                                                                {togglingId === section.id ? (
+                                                                    <span className="flex items-center">
+                                                                        <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                                                                        {t('Updating...')}
+                                                                    </span>
+                                                                ) : section.is_active ? (
+                                                                    t('Active')
+                                                                ) : (
+                                                                    t('Inactive')
+                                                                )}
+                                                            </button>
                                                         </td>
                                                         <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium">
-                                                            <Link
-                                                                href={`/sections/${section.id}`}
-                                                                className="inline-flex items-center text-sky-600 hover:text-sky-800"
-                                                            >
-                                                                <Eye className="mr-1 h-3.5 w-3.5" />
-                                                                {t('View')}
-                                                            </Link>
+                                                            <div className="flex items-center space-x-3">
+                                                                <Link
+                                                                    href={`/sections/${section.id}`}
+                                                                    className="inline-flex items-center text-sky-600 hover:text-sky-800 transition-colors"
+                                                                    title={t('View Section')}
+                                                                >
+                                                                    <Eye className="mr-1 h-3.5 w-3.5" />
+                                                                    {t('View')}
+                                                                </Link>
+                                                                <Link
+                                                                    href={`/sections/${section.id}/edit`}
+                                                                    className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                                                                    title={t('Edit Section')}
+                                                                >
+                                                                    <Edit className="mr-1 h-3.5 w-3.5" />
+                                                                    {t('Edit')}
+                                                                </Link>
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={togglingId === section.id}
+                                                                    onClick={() => handleToggle(section)}
+                                                                    className={`inline-flex items-center transition-colors ${
+                                                                        togglingId === section.id
+                                                                            ? 'opacity-50 cursor-wait text-gray-400'
+                                                                            : section.is_active
+                                                                                ? 'cursor-pointer text-amber-600 hover:text-amber-800'
+                                                                                : 'cursor-pointer text-emerald-600 hover:text-emerald-800'
+                                                                    }`}
+                                                                    title={section.is_active ? t('Deactivate Section') : t('Activate Section')}
+                                                                >
+                                                                    {togglingId === section.id ? (
+                                                                        <>
+                                                                            <RefreshCw className="mr-1 h-3.5 w-3.5 animate-spin" />
+                                                                            {section.is_active ? t('Deactivating...') : t('Activating...')}
+                                                                        </>
+                                                                    ) : section.is_active ? (
+                                                                        <>
+                                                                            <XCircle className="mr-1 h-3.5 w-3.5" />
+                                                                            {t('Deactivate')}
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                                                                            {t('Activate')}
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}

@@ -155,7 +155,7 @@ export default function Edit({
                 {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow-lg">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between py-6">
+                        <div className="flex items-center justify-between py-4">
                             <div className="flex items-center space-x-4">
                                 <Link
                                     href={route('roles.index')}
@@ -164,7 +164,7 @@ export default function Edit({
                                     <ArrowLeft className="h-5 w-5 text-white" />
                                 </Link>
                                 <div className="rounded-xl bg-white/20 p-3 shadow-lg">
-                                    <Edit2 className="h-7 w-7 text-white" />
+                                    <Edit2 className="h-5 w-5 text-white" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-bold text-white">
@@ -181,14 +181,6 @@ export default function Edit({
 
                 {/* Main Content */}
                 <main className="mx-auto max-w-7xl py-8 sm:px-6 lg:px-8">
-                    <div className="px-4 sm:px-0 mb-6">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-vismass-blue to-vismass-grey bg-clip-text text-transparent mb-2">
-                            {t('Edit Role')}
-                        </h1>
-                        <p className="text-slate-600 text-lg">
-                            {t('Update access configuration and capabilities for')} <span className="font-semibold text-vismass-blue">{role.name}</span>
-                        </p>
-                    </div>
 
                     {/* Form Container */}
                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">

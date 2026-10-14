@@ -79,11 +79,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:manage-sections')->group(function () {
         Route::get('sections', [SectionController::class, 'index'])->middleware('permission:manage-sections')->name('sections.index');
         Route::get('sections/create', [SectionController::class, 'create'])->middleware('permission:create-sections')->name('sections.create');
+        Route::get('sections/generate-code', [SectionController::class, 'generateCode'])->middleware('permission:create-sections')->name('sections.generate-code');
         Route::post('sections', [SectionController::class, 'store'])->middleware('permission:create-sections')->name('sections.store');
         Route::get('sections/{section}', [SectionController::class, 'show'])->middleware('permission:view-sections')->name('sections.show');
         Route::get('sections/{section}/edit', [SectionController::class, 'edit'])->middleware('permission:edit-sections')->name('sections.edit');
         Route::match(['put', 'patch'], 'sections/{section}', [SectionController::class, 'update'])->middleware('permission:edit-sections')->name('sections.update');
         Route::delete('sections/{section}', [SectionController::class, 'destroy'])->middleware('permission:delete-sections')->name('sections.destroy');
+        Route::post('sections/{section}/toggle', [SectionController::class, 'toggle'])->middleware('permission:edit-sections')->name('sections.toggle');
     });
 
     // Users routes with granular permissions

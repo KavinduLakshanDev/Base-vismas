@@ -29,30 +29,49 @@ class SectionController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('sections/create');
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+        $suggestedCode = Section::generateNextCode($activeCompanyCode);
+
+        return Inertia::render('sections/create', [
+            'suggestedCode' => $suggestedCode,
+            'activeCompanyCode' => $activeCompanyCode,
+        ]);
+    }
+
+    public function generateCode(Request $request)
+    {
+        $companyCode = $request->input('company_code') ?: $this->getActiveCompanyCode($request);
+        $code = Section::generateNextCode($companyCode);
+
+        return response()->json([
+            'section_code' => $code,
+        ]);
     }
 
     public function store(Request $request)
     {
         $activeCompanyCode = $this->getActiveCompanyCode($request);
 
+        // Auto-generate section_code if empty or not provided
+        if (!$request->filled('section_code')) {
+            $request->merge([
+                'section_code' => Section::generateNextCode($activeCompanyCode),
+            ]);
+        }
+
         $validated = $request->validate([
-            'section_code' => 'required|string|unique:sections,section_code',
+            'section_code' => 'required|string|max:50|unique:sections,section_code',
             'name' => 'required|string|max:255',
-            'contact_person_name' => 'nullable|string|max:255',
-            'contact_person_number' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:255',
             'section_type' => 'required|in:warehouse,store,office,other',
             'is_main_stock' => 'boolean',
         ]);
+
+        // Prevent race condition: ensure code is strictly unique before insert
+        if (Section::where('section_code', $validated['section_code'])->exists()) {
+            $validated['section_code'] = Section::generateNextCode($activeCompanyCode);
+        }
 
         $validated['uuid'] = Str::uuid();
         $validated['company_code'] = $activeCompanyCode;
@@ -100,15 +119,6 @@ class SectionController extends Controller
         $validated = $request->validate([
             'section_code' => 'nullable|string',
             'name' => 'required|string|max:255',
-            'contact_person_name' => 'nullable|string|max:255',
-            'contact_person_number' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:255',
             'section_type' => 'required|in:warehouse,store,office,other',
             'is_main_stock' => 'boolean',
         ]);
@@ -116,6 +126,25 @@ class SectionController extends Controller
         $section->update($validated);
 
         return redirect()->route('sections.show', $section)->with('success', 'Section updated successfully.');
+    }
+
+    public function toggle(Request $request, Section $section)
+    {
+        $activeCompanyCode = $this->getActiveCompanyCode($request);
+
+        if ($section->company_code && $activeCompanyCode && $section->company_code !== $activeCompanyCode) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $section->is_active = !$section->is_active;
+        $section->save();
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($section);
+        }
+
+        $status = $section->is_active ? 'activated' : 'deactivated';
+        return back()->with('success', "Section {$section->name} {$status} successfully.");
     }
 
     public function apiIndex(Request $request)

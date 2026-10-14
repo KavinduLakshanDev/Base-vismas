@@ -18,15 +18,6 @@ return new class extends Migration
             $table->foreign('company_code')->references('company_code')->on('companies')->onDelete('cascade');
             $table->string('section_code')->unique();
             $table->string('name');
-            $table->string('contact_person_name')->nullable();
-            $table->string('contact_person_number')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->string('country')->nullable();
-            $table->string('postal_code')->nullable();
             $table->enum('section_type', ['warehouse', 'store', 'office', 'other'])->default('other');
             $table->boolean('is_main_stock')->default(false);
             $table->boolean('is_active')->default(true);

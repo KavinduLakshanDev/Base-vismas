@@ -224,23 +224,6 @@ export default function ShowSection({ section }: Props) {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Contact Information Sidebar */}
-                            <div className="space-y-6">
-                                {/* Actions Card */}
-                                <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-6">
-                                    <h2 className="text-xl font-semibold text-slate-800 mb-4">Actions</h2>
-                                    <div className="space-y-3">
-                                        <Link
-                                            href={`/sections/${section.id}/edit`}
-                                            className="w-full bg-vismass-blue hover:bg-vismass-blue/90 text-white px-4 py-3 rounded-xl shadow-lg transition-all duration-200 font-medium inline-flex items-center justify-center space-x-2"
-                                        >
-                                            <Edit className="w-4 h-4" />
-                                            <span>Edit Section</span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </main>
