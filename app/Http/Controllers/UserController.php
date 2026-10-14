@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -19,6 +20,13 @@ class UserController extends Controller
         $user = $request->user();
 
         return session('active_company_code', $user?->company_code);
+    }
+
+    private function isSuperAdmin(Request $request): bool
+    {
+        $user = $request->user();
+
+        return (bool) ($user && ($user->user_type === 'super_admin' || ($user->role && $user->role->level === 'super_admin')));
     }
 
     public function index(Request $request)
@@ -57,10 +65,14 @@ class UserController extends Controller
             return response()->json($users);
         }
 
-        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+        $rolesQuery = Role::where(function ($q) use ($activeCompanyCode) {
             $q->where('company_code', $activeCompanyCode)
               ->orWhere('is_system_role', true);
-        })->orderBy('name')->get();
+        });
+        if (!$this->isSuperAdmin($request)) {
+            $rolesQuery->where('slug', '!=', 'super_admin')->where('level', '!=', 'super_admin');
+        }
+        $roles = $rolesQuery->orderBy('name')->get();
 
         $sections = Section::where('company_code', $activeCompanyCode)
             ->where('is_active', true)
@@ -82,10 +94,14 @@ class UserController extends Controller
     {
         $activeCompanyCode = $this->getActiveCompanyCode($request);
 
-        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+        $rolesQuery = Role::where(function ($q) use ($activeCompanyCode) {
             $q->where('company_code', $activeCompanyCode)
               ->orWhere('is_system_role', true);
-        })->orderBy('name')->get();
+        });
+        if (!$this->isSuperAdmin($request)) {
+            $rolesQuery->where('slug', '!=', 'super_admin')->where('level', '!=', 'super_admin');
+        }
+        $roles = $rolesQuery->orderBy('name')->get();
 
         $sections = Section::where('company_code', $activeCompanyCode)
             ->where('is_active', true)
@@ -126,6 +142,15 @@ class UserController extends Controller
             'role_id' => 'required|exists:roles,id',
             'is_active' => 'boolean',
         ]);
+
+        if (!$this->isSuperAdmin($request)) {
+            $targetRole = Role::find($validated['role_id']);
+            if ($targetRole && ($targetRole->slug === 'super_admin' || $targetRole->level === 'super_admin')) {
+                throw ValidationException::withMessages([
+                    'role_id' => 'You cannot assign the Super Admin role.',
+                ]);
+            }
+        }
 
         // Automatically assign user strictly to the active selected company
         $validated['user_type'] = 'company_user';
@@ -176,12 +201,21 @@ class UserController extends Controller
             abort(403, 'Unauthorized access to this user.');
         }
 
+        // Disallow non-superadmins from editing super_admin accounts
+        if (!$this->isSuperAdmin($request) && ($user->user_type === 'super_admin' || ($user->role && $user->role->level === 'super_admin'))) {
+            abort(403, 'Unauthorized access to super admin user.');
+        }
+
         $user->load(['company', 'section', 'role']);
 
-        $roles = Role::where(function ($q) use ($activeCompanyCode) {
+        $rolesQuery = Role::where(function ($q) use ($activeCompanyCode) {
             $q->where('company_code', $activeCompanyCode)
               ->orWhere('is_system_role', true);
-        })->orderBy('name')->get();
+        });
+        if (!$this->isSuperAdmin($request)) {
+            $rolesQuery->where('slug', '!=', 'super_admin')->where('level', '!=', 'super_admin');
+        }
+        $roles = $rolesQuery->orderBy('name')->get();
 
         $sections = Section::where('company_code', $activeCompanyCode)
             ->where('is_active', true)
@@ -208,6 +242,11 @@ class UserController extends Controller
             abort(403, 'Unauthorized access to this user.');
         }
 
+        // Disallow non-superadmins from editing super_admin accounts
+        if (!$this->isSuperAdmin($request) && ($user->user_type === 'super_admin' || ($user->role && $user->role->level === 'super_admin'))) {
+            abort(403, 'Unauthorized access to super admin user.');
+        }
+
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -219,6 +258,15 @@ class UserController extends Controller
             'is_active' => 'boolean',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
+
+        if (!$this->isSuperAdmin($request)) {
+            $targetRole = Role::find($validated['role_id']);
+            if ($targetRole && ($targetRole->slug === 'super_admin' || $targetRole->level === 'super_admin')) {
+                throw ValidationException::withMessages([
+                    'role_id' => 'You cannot assign the Super Admin role.',
+                ]);
+            }
+        }
 
         // Keep company locked to active company
         $validated['company_code'] = $activeCompanyCode;

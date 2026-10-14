@@ -404,11 +404,13 @@ export default function UsersEdit({
                                             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 focus:border-vismass-blue focus:ring-2 focus:ring-vismass-blue/20 transition"
                                         >
                                             <option value="">{t('Select Role')}</option>
-                                            {rolesList.map((r) => (
-                                                <option key={r.id} value={r.id}>
-                                                    {r.name}
-                                                </option>
-                                            ))}
+                                            {rolesList
+                                                .filter((r) => isSuperAdmin || (r.slug !== 'super_admin' && r.level !== 'super_admin' && r.name.toLowerCase() !== 'super admin'))
+                                                .map((r) => (
+                                                    <option key={r.id} value={r.id}>
+                                                        {r.name}
+                                                    </option>
+                                                ))}
                                         </select>
                                     </div>
 

@@ -8,7 +8,7 @@ import {
     Building2,
     Eye,
     Edit,
-    Layers,
+    Filter,
     Phone,
     Plus,
     RefreshCw,
@@ -18,7 +18,6 @@ import {
     UserCheck,
     Users,
     UserX,
-    X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -113,6 +112,7 @@ export default function UsersIndex({
 }) {
     const { props } = usePage<PageProps>();
     const authUser = props.auth?.user;
+    const isSuperAdmin = authUser?.user_type === 'super_admin' || (authUser as any)?.role?.level === 'super_admin' || authUser?.role_id === 1;
 
     const [usersList, setUsersList] = useState<User[]>(initialUsers);
     const [rolesList, setRolesList] = useState<Role[]>(initialRoles);
@@ -134,7 +134,7 @@ export default function UsersIndex({
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('Dashboard'), href: '/dashboard' },
-        { title: t('User Management'), href: '/users' },
+        { title: t('Users'), href: '#' },
     ];
 
     // Fetch on mount if initial data was empty
@@ -211,31 +211,24 @@ export default function UsersIndex({
         setStatusFilter('all');
     };
 
-    const hasActiveFilters =
-        searchQuery !== '' ||
-        selectedCompany !== '' ||
-        selectedSection !== '' ||
-        selectedRole !== '' ||
-        statusFilter !== 'all';
-
     const getInitials = (first: string, last: string) => {
         return `${first?.[0] || ''}${last?.[0] || ''}`.toUpperCase() || 'U';
     };
 
     const getRoleBadgeStyle = (user: User) => {
         if (user.user_type === 'super_admin' || user.role_id === 1) {
-            return 'bg-purple-100 text-purple-800 border-purple-200';
+            return 'bg-purple-100 text-purple-800';
         }
         if (user.role_id === 2 || user.role?.level === 'company_admin') {
-            return 'bg-blue-100 text-blue-800 border-blue-200';
+            return 'bg-blue-100 text-blue-800';
         }
         if (user.role_id === 5) {
-            return 'bg-amber-100 text-amber-800 border-amber-200';
+            return 'bg-amber-100 text-amber-800';
         }
         if (user.role_id === 7) {
-            return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+            return 'bg-emerald-100 text-emerald-800';
         }
-        return 'bg-slate-100 text-slate-800 border-slate-200';
+        return 'bg-slate-100 text-slate-800';
     };
 
     const handleToggleStatus = async (user: User) => {
@@ -245,7 +238,7 @@ export default function UsersIndex({
                 prev.map((u) => (u.id === user.id ? { ...u, is_active: !u.is_active } : u))
             );
             toast.success(
-                `${user.first_name || user.username} is now ${!user.is_active ? 'Active' : 'Inactive'}`
+                `${user.first_name || user.username} is now ${!user.is_active ? t('Active') : t('Inactive')}`
             );
         } catch (error) {
             try {
@@ -257,9 +250,9 @@ export default function UsersIndex({
                 setUsersList((prev) =>
                     prev.map((u) => (u.id === user.id ? { ...u, is_active: !u.is_active } : u))
                 );
-                toast.success('User status updated');
+                toast.success(t('User status updated'));
             } catch (err) {
-                toast.error('Failed to update status');
+                toast.error(t('Failed to update status'));
             }
         }
     };
@@ -275,11 +268,11 @@ export default function UsersIndex({
         try {
             await axios.delete(`/api/users/${userToDelete.id}`);
             setUsersList((prev) => prev.filter((u) => u.id !== userToDelete.id));
-            toast.success('User deleted successfully');
+            toast.success(t('User deleted successfully'));
             setDeleteDialogOpen(false);
             setUserToDelete(null);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to delete user');
+            toast.error(error.response?.data?.message || t('Failed to delete user'));
         } finally {
             setIsDeleting(false);
         }
@@ -287,10 +280,10 @@ export default function UsersIndex({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs} footerModuleName="User Management">
-            <Head title={t('User Management')} />
+            <Head title={t('Users')} />
 
             <div className="flex-1 bg-slate-50 dark:bg-background">
-                {/* Header Banner */}
+                {/* Header */}
                 <header className="bg-gradient-to-r from-vismass-blue to-vismass-grey shadow">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between py-4">
@@ -300,9 +293,9 @@ export default function UsersIndex({
                                 </div>
                                 <div>
                                     <h1 className="text-xl font-bold text-white">
-                                        {t('User Management')}
+                                        {t('Users')}
                                     </h1>
-                                    <p className="text-xs text-sky-100">
+                                    <p className="text-xs text-white/80">
                                         {t('Manage system users, credentials, role assignments and access')}
                                     </p>
                                 </div>
@@ -315,7 +308,7 @@ export default function UsersIndex({
                                     disabled={loading}
                                     className="bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white"
                                 >
-                                    <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
                                     <span>{t('Refresh')}</span>
                                 </Button>
                                 <Link
@@ -323,423 +316,375 @@ export default function UsersIndex({
                                     className="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-vismass-blue shadow hover:bg-slate-100 transition-all duration-200"
                                 >
                                     <Plus className="mr-1.5 h-4 w-4" />
-                                    <span>{t('Create New User')}</span>
+                                    {t('Create New User')}
                                 </Link>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                {/* Main Content Area */}
-                <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Stat Cards */}
-                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200 transition-all duration-200 hover:shadow-md">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                        {t('Total Users')}
-                                    </p>
-                                    <p className="mt-1 text-2xl font-bold text-slate-900">
-                                        {usersList.length}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-vismass-blue p-2.5 shadow-sm text-white">
-                                    <Users className="h-5 w-5" />
+                {/* Main Content */}
+                <main className="mx-auto max-w-7xl py-4 sm:px-6 lg:px-8">
+                    <div className="px-4 sm:px-0">
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                            <div className="group relative overflow-hidden rounded-lg bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md border border-slate-200">
+                                <div className="flex items-center">
+                                    <div className="rounded-lg bg-vismass-blue p-2 shadow-sm">
+                                        <Users className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-xs font-medium text-gray-600">{t('Total Users')}</p>
+                                        <p className="text-lg font-bold text-gray-900">
+                                            {usersList.length}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="mt-2 text-xs text-slate-500">
-                                {t('Registered accounts across system')}
+
+                            <div className="group relative overflow-hidden rounded-lg bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md border border-slate-200">
+                                <div className="flex items-center">
+                                    <div className="rounded-lg bg-orange-500 p-2 shadow-sm">
+                                        <UserCheck className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-xs font-medium text-gray-600">{t('Active Users')}</p>
+                                        <p className="text-lg font-bold text-gray-900">
+                                            {activeCount}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="group relative overflow-hidden rounded-lg bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md border border-slate-200">
+                                <div className="flex items-center">
+                                    <div className="rounded-lg bg-vismass-grey p-2 shadow-sm">
+                                        <UserX className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-xs font-medium text-gray-600">{t('Inactive Users')}</p>
+                                        <p className="text-lg font-bold text-gray-900">
+                                            {inactiveCount}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="group relative overflow-hidden rounded-lg bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md border border-slate-200">
+                                <div className="flex items-center">
+                                    <div className="rounded-lg bg-vismass-blue/60 p-2 shadow-sm">
+                                        <Shield className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-xs font-medium text-gray-600">{t('System Roles')}</p>
+                                        <p className="text-lg font-bold text-gray-900">
+                                            {rolesList.length}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200 transition-all duration-200 hover:shadow-md">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                        {t('Active Users')}
-                                    </p>
-                                    <p className="mt-1 text-2xl font-bold text-emerald-600">
-                                        {activeCount}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-emerald-500 p-2.5 shadow-sm text-white">
-                                    <UserCheck className="h-5 w-5" />
-                                </div>
-                            </div>
-                            <div className="mt-2 text-xs text-slate-500">
-                                {Math.round((activeCount / (usersList.length || 1)) * 100)}% {t('active rate')}
-                            </div>
-                        </div>
-
-                        <div className="overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200 transition-all duration-200 hover:shadow-md">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                        {t('Inactive Users')}
-                                    </p>
-                                    <p className="mt-1 text-2xl font-bold text-rose-600">
-                                        {inactiveCount}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-rose-500 p-2.5 shadow-sm text-white">
-                                    <UserX className="h-5 w-5" />
+                        {/* Main Content Card */}
+                        <div className="rounded-lg border border-slate-200 bg-white shadow overflow-hidden">
+                            <div className="bg-gradient-to-r from-vismass-blue to-vismass-grey px-4 py-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                    <div>
+                                        <h3 className="text-base font-semibold text-white">
+                                            {t('Users List')}
+                                        </h3>
+                                        <p className="text-white/80 text-xs mt-0.5">
+                                            {t('View and manage all system users')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="mt-2 text-xs text-slate-500">
-                                {t('Suspended or deactivated')}
-                            </div>
-                        </div>
 
-                        <div className="overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200 transition-all duration-200 hover:shadow-md">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                                        {t('System Roles')}
-                                    </p>
-                                    <p className="mt-1 text-2xl font-bold text-indigo-600">
-                                        {rolesList.length}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-indigo-500 p-2.5 shadow-sm text-white">
-                                    <Shield className="h-5 w-5" />
-                                </div>
-                            </div>
-                            <div className="mt-2 text-xs text-slate-500">
-                                {t('Configured permission tiers')}
-                            </div>
-                        </div>
-                    </div>
+                            <div className="p-4">
+                                {/* Filters */}
+                                <div className="bg-slate-50 p-3 rounded-lg mb-4 border border-slate-200">
+                                    <div className="space-y-3 md:space-y-0 md:flex md:flex-wrap md:items-center md:gap-3">
+                                        <div className="flex-1 min-w-[200px]">
+                                            <div className="relative">
+                                                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder={t('Search by name, username, email, phone...')}
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
+                                                />
+                                            </div>
+                                        </div>
 
-                    {/* Filter & Search Bar */}
-                    <div className="mb-6 rounded-xl bg-white p-4 shadow-sm border border-slate-200">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            {/* Search Input */}
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder={t('Search by name, username, email, phone...')}
-                                    className="w-full rounded-lg border border-slate-200 pl-9 pr-4 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-vismass-blue focus:ring-2 focus:ring-vismass-blue/20 transition-all"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Dropdowns */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {/* Company Filter */}
-                                {companiesList.length > 0 && (
-                                    <select
-                                        value={selectedCompany}
-                                        onChange={(e) => {
-                                            setSelectedCompany(e.target.value);
-                                            setSelectedSection('');
-                                        }}
-                                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-vismass-blue focus:ring-1 focus:ring-vismass-blue transition"
-                                    >
-                                        <option value="">{t('All Companies')}</option>
-                                        {companiesList.map((c) => (
-                                            <option key={c.id} value={c.company_code}>
-                                                {c.name} ({c.company_code})
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-
-                                {/* Section Filter */}
-                                {sectionsList.length > 0 && (
-                                    <select
-                                        value={selectedSection}
-                                        onChange={(e) => setSelectedSection(e.target.value)}
-                                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-vismass-blue focus:ring-1 focus:ring-vismass-blue transition"
-                                    >
-                                        <option value="">{t('All Sections')}</option>
-                                        {sectionsList
-                                            .filter(
-                                                (s) =>
-                                                    !selectedCompany ||
-                                                    s.company_code === selectedCompany
-                                            )
-                                            .map((s) => (
-                                                <option key={s.id} value={s.section_code}>
-                                                    {s.name} ({s.section_code})
-                                                </option>
-                                            ))}
-                                    </select>
-                                )}
-
-                                {/* Role Filter */}
-                                {rolesList.length > 0 && (
-                                    <select
-                                        value={selectedRole}
-                                        onChange={(e) => setSelectedRole(e.target.value)}
-                                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-vismass-blue focus:ring-1 focus:ring-vismass-blue transition"
-                                    >
-                                        <option value="">{t('All Roles')}</option>
-                                        {rolesList.map((r) => (
-                                            <option key={r.id} value={r.id.toString()}>
-                                                {r.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-
-                                {/* Status Filter */}
-                                <select
-                                    value={statusFilter}
-                                    onChange={(e) =>
-                                        setStatusFilter(
-                                            e.target.value as 'all' | 'active' | 'inactive'
-                                        )
-                                    }
-                                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-vismass-blue focus:ring-1 focus:ring-vismass-blue transition"
-                                >
-                                    <option value="all">{t('All Status')}</option>
-                                    <option value="active">{t('Active Only')}</option>
-                                    <option value="inactive">{t('Inactive Only')}</option>
-                                </select>
-
-                                {/* Reset Filters */}
-                                {hasActiveFilters && (
-                                    <button
-                                        onClick={clearFilters}
-                                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-200 transition"
-                                    >
-                                        <X className="h-3.5 w-3.5" />
-                                        <span>{t('Clear')}</span>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Users Data Table */}
-                    <div className="overflow-hidden rounded-xl bg-white shadow-sm border border-slate-200">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-slate-600">
-                                <thead className="border-b border-slate-200 bg-slate-50/80 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-4">
-                                            {t('User')}
-                                        </th>
-                                        <th scope="col" className="px-6 py-4">
-                                            {t('Role')}
-                                        </th>
-                                        <th scope="col" className="px-6 py-4">
-                                            {t('Section & Company')}
-                                        </th>
-                                        <th scope="col" className="px-6 py-4">
-                                            {t('Contact')}
-                                        </th>
-                                        <th scope="col" className="px-6 py-4 text-center">
-                                            {t('Status')}
-                                        </th>
-                                        <th scope="col" className="px-6 py-4 text-right">
-                                            {t('Actions')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredUsers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="py-12 text-center">
-                                                <div className="flex flex-col items-center justify-center">
-                                                    <div className="rounded-full bg-slate-100 p-3 text-slate-400 mb-3">
-                                                        <Users className="h-8 w-8" />
-                                                    </div>
-                                                    <p className="text-base font-semibold text-slate-800">
-                                                        {t('No users found')}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                                                        {hasActiveFilters
-                                                            ? t('Try adjusting your search query or clearing the active filters.')
-                                                            : t('Get started by creating your first system user account.')}
-                                                    </p>
-                                                    {hasActiveFilters ? (
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={clearFilters}
-                                                            className="mt-4"
-                                                        >
-                                                            {t('Reset Filters')}
-                                                        </Button>
-                                                    ) : (
-                                                        <Link
-                                                            href="/users/create"
-                                                            className="mt-4 inline-flex items-center rounded-lg bg-vismass-blue px-4 py-2 text-xs font-medium text-white shadow hover:bg-vismass-blue/90 transition"
-                                                        >
-                                                            <Plus className="h-4 w-4 mr-1" />
-                                                            {t('Create User')}
-                                                        </Link>
-                                                    )}
+                                        {companiesList.length > 0 && (
+                                            <div className="w-full md:w-44">
+                                                <div className="relative">
+                                                    <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                    <select
+                                                        value={selectedCompany}
+                                                        onChange={(e) => {
+                                                            setSelectedCompany(e.target.value);
+                                                            setSelectedSection('');
+                                                        }}
+                                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
+                                                    >
+                                                        <option value="">{t('All Companies')}</option>
+                                                        {companiesList.map((c) => (
+                                                            <option key={c.id} value={c.company_code}>
+                                                                {c.name} ({c.company_code})
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filteredUsers.map((user) => (
-                                            <tr
-                                                key={user.id}
-                                                className="transition-colors hover:bg-slate-50/70"
+                                            </div>
+                                        )}
+
+                                        {sectionsList.length > 0 && (
+                                            <div className="w-full md:w-44">
+                                                <div className="relative">
+                                                    <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                    <select
+                                                        value={selectedSection}
+                                                        onChange={(e) => setSelectedSection(e.target.value)}
+                                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
+                                                    >
+                                                        <option value="">{t('All Sections')}</option>
+                                                        {sectionsList
+                                                            .filter(
+                                                                (s) =>
+                                                                    !selectedCompany ||
+                                                                    s.company_code === selectedCompany
+                                                            )
+                                                            .map((s) => (
+                                                                <option key={s.id} value={s.section_code}>
+                                                                    {s.name} ({s.section_code})
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {rolesList.length > 0 && (
+                                            <div className="w-full md:w-40">
+                                                <div className="relative">
+                                                    <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                    <select
+                                                        value={selectedRole}
+                                                        onChange={(e) => setSelectedRole(e.target.value)}
+                                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
+                                                    >
+                                                        <option value="">{t('All Roles')}</option>
+                                                        {rolesList
+                                                            .filter((r) => isSuperAdmin || (r.slug !== 'super_admin' && r.level !== 'super_admin' && r.name.toLowerCase() !== 'super admin'))
+                                                            .map((r) => (
+                                                                <option key={r.id} value={r.id.toString()}>
+                                                                    {r.name}
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="w-full md:w-36">
+                                            <div className="relative">
+                                                <Filter className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                                <select
+                                                    value={statusFilter}
+                                                    onChange={(e) =>
+                                                        setStatusFilter(
+                                                            e.target.value as 'all' | 'active' | 'inactive'
+                                                        )
+                                                    }
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-vismass-blue focus:border-vismass-blue transition"
+                                                >
+                                                    <option value="all">{t('All Status')}</option>
+                                                    <option value="active">{t('Active')}</option>
+                                                    <option value="inactive">{t('Inactive')}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex space-x-2">
+                                            <button
+                                                type="button"
+                                                onClick={clearFilters}
+                                                className="inline-flex items-center bg-gray-200 text-gray-700 px-4 py-2 text-sm rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium cursor-pointer"
                                             >
-                                                {/* User Identity */}
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-600 to-vismass-blue text-sm font-bold text-white shadow-sm">
-                                                            {getInitials(user.first_name, user.last_name)}
-                                                        </div>
-                                                        <div>
-                                                            <Link
-                                                                href={`/users/${user.id}`}
-                                                                className="font-medium text-slate-900 hover:text-vismass-blue transition"
-                                                            >
-                                                                {user.first_name} {user.last_name}
-                                                            </Link>
-                                                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                                                                <span>@{user.username}</span>
-                                                                <span>•</span>
-                                                                <span className="truncate max-w-[180px]">{user.email}</span>
+                                                <Filter className="mr-1.5 h-3.5 w-3.5" />
+                                                {t('Clear')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Users Table */}
+                                {filteredUsers.length > 0 ? (
+                                    <div className="overflow-hidden rounded-lg border border-gray-200">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gradient-to-r from-sky-50 to-blue-50">
+                                                <tr>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('User')}
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('Role')}
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('Section')}
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('Contact')}
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('Status')}
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-sky-900 uppercase tracking-wider">
+                                                        {t('Actions')}
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {filteredUsers.map((user) => (
+                                                    <tr key={user.id} className="hover:bg-sky-50/50 transition-colors duration-150">
+                                                        {/* User Identity */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap">
+                                                            <div className="flex items-center space-x-3">
+                                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-sky-600 to-vismass-blue text-xs font-bold text-white shadow-sm">
+                                                                    {getInitials(user.first_name, user.last_name)}
+                                                                </div>
+                                                                <div>
+                                                                    <Link
+                                                                        href={`/users/${user.id}`}
+                                                                        className="text-xs font-medium text-gray-900 hover:text-vismass-blue transition"
+                                                                    >
+                                                                        {user.first_name} {user.last_name}
+                                                                    </Link>
+                                                                    <div className="flex items-center space-x-1.5 text-[11px] text-gray-500">
+                                                                        <span>@{user.username}</span>
+                                                                        <span>•</span>
+                                                                        <span className="truncate max-w-[160px]">{user.email}</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                        </td>
 
-                                                {/* Role */}
-                                                <td className="px-6 py-4">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${getRoleBadgeStyle(
-                                                            user
-                                                        )}`}
-                                                    >
-                                                        <Shield className="h-3 w-3" />
-                                                        <span>
-                                                            {user.role?.name ||
-                                                                (user.user_type === 'super_admin'
-                                                                    ? 'Super Admin'
-                                                                    : 'Standard User')}
-                                                        </span>
-                                                    </span>
-                                                </td>
-
-                                                {/* Section & Company */}
-                                                <td className="px-6 py-4">
-                                                    <div className="space-y-0.5">
-                                                        <div className="flex items-center gap-1 text-xs font-medium text-slate-800">
-                                                            <Layers className="h-3.5 w-3.5 text-slate-400" />
-                                                            <span>
-                                                                {user.section?.name ||
-                                                                    user.section_code ||
-                                                                    t('All Sections')}
+                                                        {/* Role */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap">
+                                                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getRoleBadgeStyle(user)}`}>
+                                                                {user.role?.name || (user.user_type === 'super_admin' ? 'Super Admin' : 'Standard User')}
                                                             </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-[11px] text-slate-500">
-                                                            <Building2 className="h-3 w-3 text-slate-400" />
-                                                            <span>
-                                                                {user.company?.name ||
-                                                                    user.company_code ||
-                                                                    'VISMASS'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                        </td>
 
-                                                {/* Contact */}
-                                                <td className="px-6 py-4">
-                                                    <div className="text-xs text-slate-700">
-                                                        {user.phone ? (
-                                                            <div className="flex items-center gap-1">
-                                                                <Phone className="h-3 w-3 text-slate-400" />
-                                                                <span>{user.phone}</span>
+                                                        {/* Section & Company */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap">
+                                                            <div className="text-xs font-medium text-gray-900">
+                                                                {user.section?.name || user.section_code || t('All Sections')}
                                                             </div>
-                                                        ) : (
-                                                            <span className="text-slate-400 italic">
-                                                                {t('No phone')}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
+                                                            {user.company && (
+                                                                <div className="text-[11px] text-gray-500 flex items-center mt-0.5">
+                                                                    <Building2 className="mr-1 h-3 w-3" />
+                                                                    {user.company.name}
+                                                                </div>
+                                                            )}
+                                                        </td>
 
-                                                {/* Status */}
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => handleToggleStatus(user)}
-                                                        title="Click to toggle status"
-                                                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium transition cursor-pointer ${
-                                                            user.is_active
-                                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                                                                : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
-                                                        }`}
-                                                    >
-                                                        <span
-                                                            className={`h-1.5 w-1.5 rounded-full ${
-                                                                user.is_active
-                                                                    ? 'bg-emerald-500'
-                                                                    : 'bg-slate-400'
-                                                            }`}
-                                                        />
-                                                        <span>
-                                                            {user.is_active ? t('Active') : t('Inactive')}
-                                                        </span>
-                                                    </button>
-                                                </td>
+                                                        {/* Contact */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap">
+                                                            {user.phone ? (
+                                                                <div className="text-xs text-gray-900 flex items-center">
+                                                                    <Phone className="mr-1 h-3 w-3 text-gray-400" />
+                                                                    {user.phone}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 italic">-</span>
+                                                            )}
+                                                        </td>
 
-                                                {/* Actions */}
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end space-x-1">
-                                                        <Link
-                                                            href={`/users/${user.id}`}
-                                                            title={t('View User')}
-                                                            className="rounded-lg p-1.5 text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition"
-                                                        >
-                                                            <Eye className="mr-1 h-3.5 w-3.5" />
-                                                                {t('View')}
-                                                        </Link>
-                                                        <Link
-                                                            href={`/users/${user.id}/edit`}
-                                                            title={t('Edit User')}
-                                                            className="rounded-lg p-1.5 text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition"
-                                                        >
-                                                            <Edit className="mr-1 h-3.5 w-3.5" />
-                                                                    {t('Edit')}
-                                                        </Link>
-                                                        {authUser?.id !== user.id && (
+                                                        {/* Status */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap">
                                                             <button
-                                                                onClick={() => handleDeleteClick(user)}
-                                                                title={t('Delete User')}
-                                                                className="rounded-lg p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition"
+                                                                type="button"
+                                                                onClick={() => handleToggleStatus(user)}
+                                                                className={`px-2 py-0.5 text-xs font-medium rounded-full cursor-pointer transition ${
+                                                                    user.is_active
+                                                                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                                        : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                                }`}
+                                                                title={user.is_active ? t('Click to deactivate') : t('Click to activate')}
                                                             >
-                                                                <Trash2 className="h-4 w-4" />
+                                                                {user.is_active ? t('Active') : t('Inactive')}
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                                        </td>
 
-                        {/* Table Footer / Summary */}
-                        {filteredUsers.length > 0 && (
-                            <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/50 px-6 py-3 text-xs text-slate-500">
-                                <div>
-                                    {t('Showing')} <span className="font-semibold text-slate-700">{filteredUsers.length}</span> {t('of')} <span className="font-semibold text-slate-700">{usersList.length}</span> {t('users')}
-                                </div>
-                                <div className="text-slate-400">
-                                    {t('VISMASS POS User Directory')}
-                                </div>
+                                                        {/* Actions */}
+                                                        <td className="px-4 py-2.5 whitespace-nowrap text-xs font-medium">
+                                                            <div className="flex items-center space-x-3">
+                                                                <Link
+                                                                    href={`/users/${user.id}`}
+                                                                    className="inline-flex items-center text-sky-600 hover:text-sky-800 transition-colors"
+                                                                    title={t('View User')}
+                                                                >
+                                                                    <Eye className="mr-1 h-3.5 w-3.5" />
+                                                                    {t('View')}
+                                                                </Link>
+                                                                <Link
+                                                                    href={`/users/${user.id}/edit`}
+                                                                    className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                                                                    title={t('Edit User')}
+                                                                >
+                                                                    <Edit className="mr-1 h-3.5 w-3.5" />
+                                                                    {t('Edit')}
+                                                                </Link>
+                                                                {authUser?.id !== user.id && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleDeleteClick(user)}
+                                                                        className="inline-flex items-center text-rose-600 hover:text-rose-800 transition-colors cursor-pointer"
+                                                                        title={t('Delete User')}
+                                                                    >
+                                                                        <Trash2 className="mr-1 h-3.5 w-3.5" />
+                                                                        {t('Delete')}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <div className="mx-auto h-10 w-10 text-gray-400 mb-3">
+                                            <Users className="h-10 w-10" />
+                                        </div>
+                                        <h3 className="text-xs font-medium text-gray-900 mb-1.5">{t('No users found')}</h3>
+                                        <p className="text-xs text-gray-500 mb-3">
+                                            {t('Get started by creating a new user.')}
+                                        </p>
+                                        <Link
+                                            href="/users/create"
+                                            className="inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-xs font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+                                        >
+                                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                                            {t('Create User')}
+                                        </Link>
+                                    </div>
+                                )}
+
+                                {/* Footer summary */}
+                                {filteredUsers.length > 0 && (
+                                    <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-500 mt-4 rounded-b-lg">
+                                        <div>
+                                            {t('Showing')} <span className="font-semibold text-slate-700">{filteredUsers.length}</span> {t('of')} <span className="font-semibold text-slate-700">{usersList.length}</span> {t('users')}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </main>
             </div>
