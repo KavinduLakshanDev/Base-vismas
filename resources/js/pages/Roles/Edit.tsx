@@ -82,11 +82,6 @@ export default function Edit({
     const [permissionSearch, setPermissionSearch] = useState('');
     const [selectedAll, setSelectedAll] = useState(false);
 
-    React.useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash?.success, flash?.error]);
-
     const { data, setData, put, processing, errors } = useForm<FormData>({
         name: role.name,
         slug: role.slug,

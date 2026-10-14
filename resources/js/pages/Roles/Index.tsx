@@ -74,10 +74,8 @@ export default function Index({ roles, filters, success, error }: Props) {
     const currentUserType = auth?.user?.user_type;
 
     React.useEffect(() => {
-        const msgSuccess = success || flash?.success;
-        const msgError = error || flash?.error;
-        if (msgSuccess) toast.success(msgSuccess);
-        if (msgError) toast.error(msgError);
+        if (success && success !== flash?.success) toast.success(success);
+        if (error && error !== flash?.error) toast.error(error);
     }, [success, error, flash?.success, flash?.error]);
 
     const handleSearch = (e: React.FormEvent) => {

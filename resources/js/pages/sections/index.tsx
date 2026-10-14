@@ -9,11 +9,6 @@ import { t } from '@/lib/i18n';
 export default function SectionIndex({ sections }: { sections: any[] }) {
     const { flash } = usePage<any>().props;
 
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash?.success, flash?.error]);
-
     const activeSections = sections.filter(section => section.is_active).length;
     const inactiveSections = sections.filter(section => !section.is_active).length;
     const warehouseCount = sections.filter(section => section.section_type === 'warehouse').length;

@@ -1,17 +1,14 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
 import axios from 'axios';
 import {
     Building2,
-    CheckCircle2,
     Eye,
-    Filter,
+    Edit,
     Layers,
-    Mail,
-    Pen,
     Phone,
     Plus,
     RefreshCw,
@@ -22,9 +19,8 @@ import {
     Users,
     UserX,
     X,
-    XCircle,
 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { t } from '@/lib/i18n';
 
@@ -704,14 +700,16 @@ export default function UsersIndex({
                                                             title={t('View User')}
                                                             className="rounded-lg p-1.5 text-slate-500 hover:bg-sky-50 hover:text-sky-600 transition"
                                                         >
-                                                            <Eye className="h-4 w-4" />
+                                                            <Eye className="mr-1 h-3.5 w-3.5" />
+                                                                {t('View')}
                                                         </Link>
                                                         <Link
                                                             href={`/users/${user.id}/edit`}
                                                             title={t('Edit User')}
                                                             className="rounded-lg p-1.5 text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition"
                                                         >
-                                                            <Pen className="h-4 w-4" />
+                                                            <Edit className="mr-1 h-3.5 w-3.5" />
+                                                                    {t('Edit')}
                                                         </Link>
                                                         {authUser?.id !== user.id && (
                                                             <button
